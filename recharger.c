@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#define NB_LIGNES 20
-#define NB_COLONNES 25
+#define NB_LIGNES 15
+#define NB_COLONNES 15
 
 int genererBonbon() {
     return (rand() % 4) + 1;      // 4 types de bonbons
