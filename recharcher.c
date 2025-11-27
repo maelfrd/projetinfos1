@@ -1,10 +1,10 @@
 #include <stdlib.h>
 
-#define NB_LIGNES 9
-#define NB_COLONNES 9
+#define NB_LIGNES 20
+#define NB_COLONNES 25
 
 int genererBonbon() {
-    return (rand() % 5) + 1;      // 5 types de bonbons
+    return (rand() % 4) + 1;      // 4 types de bonbons
 }
 
 void remplirCasesVides(int grille[NB_LIGNES][NB_COLONNES]) {
