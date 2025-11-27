@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NB_LIGNES 20
-#define NB_COLONNES 25
+#define NB_LIGNES 15
+#define NB_COLONNES 15
 
 void faireTomber(int grille[NB_LIGNES][NB_COLONNES]) {
 
