@@ -3,29 +3,17 @@
 
 #include "structures.h"
 
-/**
- * Initialise une nouvelle partie
- */
 void initialiserPartie(JeuState *jeu, int lignes, int colonnes);
-
-/**
- * Vérifie si le joueur a gagné
- */
 int verifierVictoire(JeuState *jeu);
-
-/**
- * Libère la mémoire allouée pour le jeu
- */
 void libererPartie(JeuState *jeu);
 
-/**
- * Gère la sélection et la permutation des bonbons
- */
-void gererPermutation(JeuState *jeu);
+/*
+  0  : permutation exécutée
+ -1  : pas adjacent
+ -2  : permutation invalide (pas d’alignement)
+*/
+int gererPermutation(JeuState *jeu);
 
-/**
- * Boucle principale du jeu
- */
 void boucleJeu(JeuState *jeu);
 
 #endif

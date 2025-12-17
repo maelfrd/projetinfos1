@@ -3,41 +3,25 @@
 
 #include "structures.h"
 
-
-
-/**
- * Affiche l'en-tête du jeu
- */
+/* Affiche l'en-tête du jeu */
 void afficherEntete(void);
 
-// permet de afficher le jeu 
-void afficherJeu(JeuState *jeu);
-
-
-/**
- * Affiche le plateau de jeu
- */
+/* Affiche uniquement le plateau */
 void afficherPlateau(JeuState *jeu);
 
-/**
- * Affiche les informations de jeu (coups, objectifs, progression)
- */
+/* Affiche les infos (coups, objectif, compteurs de bonbons) */
 void afficherInfos(JeuState *jeu);
 
-/**
- * Affiche les contrôles disponibles
- */
+/* Affiche les contrôles et l’état de sélection */
 void afficherControles(JeuState *jeu);
 
-/**
- * Affiche l'écran de fin de partie
- */
+/* Affiche l'écran de fin de partie */
 void afficherFinPartie(JeuState *jeu);
 
-/**
- * Affiche un message d'erreur temporaire
- */
+/* Affiche un message d'erreur temporaire */
 void afficherErreur(const char *message);
 
+/* Affiche l’écran complet (entête + plateau + infos + contrôles) */
+void afficherJeu(JeuState *jeu);
 
 #endif

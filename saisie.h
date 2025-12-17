@@ -1,9 +1,15 @@
 #ifndef SAISIE_H
 #define SAISIE_H
 
-#include "structures.h"   // JeuState
+#include "structures.h"
 
-// Lit une commande clavier et applique l'effet sur le jeu
-void gererSaisie(JeuState *jeu);
+/*
+  Applique une commande au jeu, SANS I/O (lecture clavier faite dans boucleJeu).
+  Commandes:
+    z = haut, s = bas, q = gauche, d = droite
+    p = sélectionner / annuler la sélection
+    x = quitter
+*/
+void appliquerCommande(JeuState *jeu, char commande);
 
 #endif
