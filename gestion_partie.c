@@ -102,76 +102,12 @@ void gererPermutation(JeuState *jeu) {
 }
 
 
- void boucleJeu(JeuState *jeu) {
+ 
 
-    int attente_entree = 0;
-    char buf[32];
-
+void boucleJeu(JeuState *jeu) {
     while (jeu->continuer) {
-
         afficherJeu(jeu);
-
-        printf("Commande (zqsd/wasd, p puis Entrée, Entrée seule=valider, x=quitter) : ");
-        fflush(stdout);
-
-        if (!fgets(buf, sizeof(buf), stdin)) {
-            // EOF => on quitte proprement
-            jeu->continuer = 0;
-            break;
-        }
-
-        char c = buf[0]; // 1er caractère de la ligne
-
-        // Quitter
-        if (c == 'x' || c == 'X') {
-            jeu->continuer = 0;
-            continue;
-        }
-
-        // Déplacements (tour par tour)
-        if (c == 'z' || c == 'Z' || c == 'w' || c == 'W') {
-            if (jeu->curseur_y > 0) jeu->curseur_y--;
-            attente_entree = 0;
-            continue;
-        }
-        if (c == 's' || c == 'S') {
-            if (jeu->curseur_y < jeu->lignes - 1) jeu->curseur_y++;
-            attente_entree = 0;
-            continue;
-        }
-        if (c == 'q' || c == 'Q' || c == 'a' || c == 'A') {
-            if (jeu->curseur_x > 0) jeu->curseur_x--;
-            attente_entree = 0;
-            continue;
-        }
-        if (c == 'd' || c == 'D') {
-            if (jeu->curseur_x < jeu->colonnes - 1) jeu->curseur_x++;
-            attente_entree = 0;
-            continue;
-        }
-
-        // Armement sélection : P + Entrée
-        if (!jeu->mode_selection) {
-            if (c == 'p' || c == 'P') {
-                attente_entree = 1;      // on attend Entrée seule
-                continue;
-            }
-            // Entrée seule => valide la 1ère sélection si on a armé avec P
-            if ((c == '\n' || c == '\r') && attente_entree) {
-                gererPermutation(jeu);   // 1ère sélection (prend la case du curseur)
-                attente_entree = 0;
-                continue;
-            }
-        } else {
-            // Déjà sélectionné : Entrée seule => tente la permutation avec la case du curseur
-            if (c == '\n' || c == '\r') {
-                gererPermutation(jeu);   // 2e sélection + swap si adjacent
-                continue;
-            }
-        }
-
-        // Toute autre commande : on ignore et on désarme
-        attente_entree = 0;
+        gererSaisie(jeu);   // <-- toute la saisie est dans saisie.c
     }
 }
 
