@@ -3,7 +3,7 @@
 #include "affichage.h"
 
 void afficherEntete(void) {
-    printf("╔═══════════════════════════════════════╗\n");
+    printf("_________________________________________\n");
     printf("║       CANDY CRUSH - NIVEAU 1          ║\n");
     printf("╚═══════════════════════════════════════╝\n\n");
 }
