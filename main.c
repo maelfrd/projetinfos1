@@ -8,10 +8,9 @@ int main(void) {
     int lignes, colonnes;
     
     // Affichage du titre
-    printf("╔═══════════════════════════════════════╗\n");
-    printf("║       CANDY CRUSH - NIVEAU 1          ║\n");
-    printf("╚═══════════════════════════════════════╝\n\n");
-    
+    afficherEntete();
+
+
     // Saisie des dimensions
     printf("Choix du nombre de lignes du plateau : ");
     scanf("%d", &lignes);

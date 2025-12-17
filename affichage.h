@@ -3,6 +3,9 @@
 
 #include "structures.h"
 
+
+
+
 /**
  * Affiche l'en-tête du jeu
  */
@@ -32,5 +35,6 @@ void afficherFinPartie(JeuState *jeu);
  * Affiche un message d'erreur temporaire
  */
 void afficherErreur(const char *message);
+
 
 #endif
