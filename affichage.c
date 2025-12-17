@@ -5,7 +5,7 @@
 void afficherEntete(void) {
     printf("_________________________________________\n");
     printf("║       CANDY CRUSH - NIVEAU 1          ║\n");
-    printf("╚═══════════════════════════════════════╝\n\n");
+    printf("╚----------------------------------------\n\n");
 }
 
 void afficherPlateau(JeuState *jeu) {
