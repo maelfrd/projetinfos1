@@ -5,11 +5,14 @@
 
 
 
-
 /**
  * Affiche l'en-tête du jeu
  */
 void afficherEntete(void);
+
+// permet de afficher le jeu 
+void afficherJeu(JeuState *jeu);
+
 
 /**
  * Affiche le plateau de jeu

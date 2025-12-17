@@ -10,12 +10,6 @@ int main(void) {
     // Affichage du titre
     afficherEntete();
 
-
-    // Saisie des dimensions
-    printf("Choix du nombre de lignes du plateau : ");
-    scanf("%d", &lignes);
-    printf("Choix du nombre de colonnes du plateau : ");
-    scanf("%d", &colonnes);
     
     // Initialisation de la partie
     initialiserPartie(&jeu, lignes, colonnes);

@@ -10,8 +10,8 @@
 
 void initialiserPartie(JeuState *jeu, int lignes, int colonnes) {
     // Initialisation de la structure
-    jeu->lignes = lignes;
-    jeu->colonnes = colonnes;
+    jeu->lignes = 10;
+    jeu->colonnes = 10;
     jeu->nbcoups = 50;
     jeu->curseur_x = 0;
     jeu->curseur_y = 0;
@@ -101,39 +101,77 @@ void gererPermutation(JeuState *jeu) {
     }
 }
 
-void boucleJeu(JeuState *jeu) {
-    desactiver_mode_canonique();
-    
-    while(jeu->continuer && jeu->nbcoups > 0) {
-        // Vérifie la victoire
-        if(verifierVictoire(jeu)) {
-            jeu->victoire = 1;
+
+ void boucleJeu(JeuState *jeu) {
+
+    int attente_entree = 0;
+    char buf[32];
+
+    while (jeu->continuer) {
+
+        afficherJeu(jeu);
+
+        printf("Commande (zqsd/wasd, p puis Entrée, Entrée seule=valider, x=quitter) : ");
+        fflush(stdout);
+
+        if (!fgets(buf, sizeof(buf), stdin)) {
+            // EOF => on quitte proprement
             jeu->continuer = 0;
             break;
         }
-        
-        // Efface l'écran
-        printf("\033[2J\033[H");
-        
-        // Affichage
-        afficherEntete();
-        afficherPlateau(jeu);
-        afficherInfos(jeu);
-        afficherControles(jeu);
-        
-        // Gestion des entrées
-        char touche = deplacerCurseur(&jeu->curseur_x, &jeu->curseur_y, 
-                                      jeu->lignes, jeu->colonnes);
-        
-        if(touche == 'q' || touche == 'Q') {
+
+        char c = buf[0]; // 1er caractère de la ligne
+
+        // Quitter
+        if (c == 'x' || c == 'X') {
             jeu->continuer = 0;
+            continue;
         }
-        else if(touche == 'p' || touche == 'P') {
-            gererPermutation(jeu);
+
+        // Déplacements (tour par tour)
+        if (c == 'z' || c == 'Z' || c == 'w' || c == 'W') {
+            if (jeu->curseur_y > 0) jeu->curseur_y--;
+            attente_entree = 0;
+            continue;
         }
-        
-        usleep(50000);
+        if (c == 's' || c == 'S') {
+            if (jeu->curseur_y < jeu->lignes - 1) jeu->curseur_y++;
+            attente_entree = 0;
+            continue;
+        }
+        if (c == 'q' || c == 'Q' || c == 'a' || c == 'A') {
+            if (jeu->curseur_x > 0) jeu->curseur_x--;
+            attente_entree = 0;
+            continue;
+        }
+        if (c == 'd' || c == 'D') {
+            if (jeu->curseur_x < jeu->colonnes - 1) jeu->curseur_x++;
+            attente_entree = 0;
+            continue;
+        }
+
+        // Armement sélection : P + Entrée
+        if (!jeu->mode_selection) {
+            if (c == 'p' || c == 'P') {
+                attente_entree = 1;      // on attend Entrée seule
+                continue;
+            }
+            // Entrée seule => valide la 1ère sélection si on a armé avec P
+            if ((c == '\n' || c == '\r') && attente_entree) {
+                gererPermutation(jeu);   // 1ère sélection (prend la case du curseur)
+                attente_entree = 0;
+                continue;
+            }
+        } else {
+            // Déjà sélectionné : Entrée seule => tente la permutation avec la case du curseur
+            if (c == '\n' || c == '\r') {
+                gererPermutation(jeu);   // 2e sélection + swap si adjacent
+                continue;
+            }
+        }
+
+        // Toute autre commande : on ignore et on désarme
+        attente_entree = 0;
     }
-    
-    reactiver_mode_canonique();
 }
+
