@@ -2,10 +2,10 @@
 #include <unistd.h>
 #include "affichage.h"
 
-void afficherEntete(void) {
-    printf("_________________________________________\n");
-    printf("║       CANDY CRUSH - NIVEAU 1          ║\n");
-    printf("╚----------------------------------------\n\n");
+void afficherTitre(void) {
+    printf("_____________________________\n");
+    printf("|   CANDY CRUSH - NIVEAU 1   |\n");
+    printf("_____________________________\n\n");
 }
 
 void afficherPlateau(JeuState *jeu) {
