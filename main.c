@@ -16,6 +16,5 @@ int main(void) {
 
     afficherFinPartie(&jeu);
     libererPartie(&jeu);
-
     return 0;
 }
