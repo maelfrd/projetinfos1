@@ -18,3 +18,4 @@ int main(void) {
     libererPartie(&jeu);
     return 0;
 }
+

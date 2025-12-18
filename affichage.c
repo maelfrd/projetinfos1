@@ -1,11 +1,16 @@
 #include <stdio.h>
+#include <stddef.h>
 #include <unistd.h>
 
 #include "affichage.h"
 
-static const char* safeCell(char *cell) {
-    return (cell == 0) ? " " : cell;
-}
+
+void nettoyer_ecran(void)
+    {
+    for (int i = 0; i < 60; i++) {
+        printf("\n");
+    }
+    }
 
 void afficherEntete(void) {
     printf("➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n");
@@ -23,14 +28,18 @@ void afficherPlateau(JeuState *jeu) {
         printf("│ ");
         for (int y = 0; y < (*jeu).colonnes; y++) {
             int index = x * (*jeu).colonnes + y;
-            const char *cell = safeCell((*jeu).plateau[index]);
+            const char *contenu = (*jeu).plateau[index];
+            if (contenu == NULL) {
+                contenu = " ";
+            }
+
 
             if ((*jeu).mode_selection && x == (*jeu).selection_x && y == (*jeu).selection_y) {
-                printf("\033[1;34m[%s]\033[0m", cell);
+                printf("[%s]", contenu);
             } else if (x == (*jeu).curseur_x && y == (*jeu).curseur_y) {
-                printf("\033[1;32m<%s>\033[0m", cell);
+                printf("<%s>", contenu);
             } else {
-                printf(" %s ", cell);
+                printf(" %s ", contenu);
             }
         }
         printf("│\n");
@@ -56,7 +65,7 @@ void afficherInfos(JeuState *jeu) {
     printf("\nRécolte :\n");
     for (int i = 0; i < NB_TYPES_BONBONS; i++) {
         printf("  %s %-7s : %2d/%d", (*jeu).emojis[i], noms[i], (*jeu).nbemoji[i], OBJECTIF_PAR_FRUIT);
-        if ((*jeu).nbemoji[i] >= OBJECTIF_PAR_FRUIT) printf(" \033[1;32m✓\033[0m");
+        if ((*jeu).nbemoji[i] >= OBJECTIF_PAR_FRUIT) printf(" [OK]");
         printf("\n");
     }
 }
@@ -68,7 +77,7 @@ void afficherControles(JeuState *jeu) {
     printf("🔛 Position : [%d,%d]                            🔛\n", (*jeu).curseur_x, (*jeu).curseur_y);
 
     if ((*jeu).mode_selection) {
-        printf("🔛 \033[1;33mMODE SÉLECTION ACTIVÉ\033[0m                     🔛\n");
+        printf("🔛 MODE SÉLECTION ACTIVÉ                       🔛\n");
         printf("🔛 Bonbon sélectionné : [%d,%d]                 🔛\n", (*jeu).selection_x, (*jeu).selection_y);
         printf("🔛 → Déplacez vers un bonbon adjacent          🔛\n");
         printf("🔛 → Entrée pour permuter                      🔛\n");
@@ -85,14 +94,11 @@ void afficherControles(JeuState *jeu) {
 
 void afficherFinPartie(JeuState *jeu) {
     if (jeu == 0) return;
-
-    printf("\033[2J\033[H");
-
     if ((*jeu).victoire) {
         printf("\n");
         printf("➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n");
         printf("🔛                                               🔛\n");
-        printf("🔛     \033[1;32m🎉 FÉLICITATIONS ! 🎉\033[0m                   🔛\n");
+        printf("🔛     🎉 FÉLICITATIONS ! 🎉                    🔛\n");
         printf("🔛                                               🔛\n");
         printf("🔛         PARTIE TERMINÉE !                     🔛\n");
         printf("🔛                                               🔛\n");
@@ -102,7 +108,7 @@ void afficherFinPartie(JeuState *jeu) {
         printf("\n");
         printf("➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n");
         printf("🔛                                               🔛\n");
-        printf("🔛         \033[1;31mPARTIE TERMINÉE\033[0m                      🔛\n");
+        printf("🔛         PARTIE TERMINÉE                      🔛\n");
         printf("🔛                                               🔛\n");
         printf("➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n\n");
         printf("Vous n'avez plus de coups disponibles.\n\n");
@@ -113,14 +119,15 @@ void afficherFinPartie(JeuState *jeu) {
 }
 
 void afficherErreur(const char *message) {
-    printf("\n\033[1;31m✗ %s\033[0m\n", message);
-    sleep(1);
+    printf("\n[ERREUR] %s\n", message);
+    
 }
 
 void afficherJeu(JeuState *jeu) {
-    printf("\033[2J\033[H");
+    nettoyer_ecran();
     afficherEntete();
     afficherPlateau(jeu);
     afficherInfos(jeu);
     afficherControles(jeu);
 }
+

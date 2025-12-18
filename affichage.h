@@ -24,4 +24,8 @@ void afficherErreur(const char *message);
 /* Affiche l’écran complet (entête + plateau + infos + contrôles) */
 void afficherJeu(JeuState *jeu);
 
+
+//nettoyer l'ecran 
+ void nettoyer_ecran(void);
+ 
 #endif
