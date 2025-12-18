@@ -3,13 +3,7 @@
 
 #include "structures.h"
 
-/*
-  Applique une commande au jeu, 
-  Commandes:
-    z = haut, s = bas, q = gauche, d = droite
-    p = sélectionner / annuler la sélection
-    x = quitter
-*/
+/* Applique une commande (minuscules uniquement) sur l'état du jeu. */
 void appliquerCommande(JeuState *jeu, char commande);
 
 #endif
