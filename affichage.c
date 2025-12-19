@@ -21,7 +21,7 @@ void afficher_plateau(Jeu *jeu)
     char *c;
     
     /* Bordure haute */
-    for (y = 0; y < jeu->colonnes; y++) printf("---");
+    for (y = 0; y < jeu->colonnes; y++) printf("----");
     printf("-\n");
     
     /* Lignes du plateau */
@@ -93,7 +93,7 @@ void afficher_controles(Jeu *jeu)
 void afficher_jeu(Jeu *jeu)
 {
     nettoyer_ecran();
-    printf("============ CANDY CRUSH ============\n");
+    printf("              CANDY CRUSH \n");
     afficher_plateau(jeu);
     afficher_infos(jeu);
     afficher_controles(jeu);
@@ -102,12 +102,11 @@ void afficher_jeu(Jeu *jeu)
 void afficher_fin(Jeu *jeu)
 {
     nettoyer_ecran();
-    printf("============================================\n");
+    printf("\n");
     if (jeu->victoire)
         printf("            VICTOIRE !\n");
     else
-        printf("            PARTIE TERMINEE\n");
-    printf("============================================\n");
+        printf("            PARTIE TERMINEE\n\n");
     printf("Coups restants: %d\n", jeu->coups);
     pause_entree();
 }
