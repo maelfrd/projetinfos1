@@ -8,7 +8,7 @@
 #include "affichage.h"
 #include "saisie.h"
 
-static int abs_val(int x) { return x < 0 ? -x : x; }
+static int abs_val(int x) { return x < 0 ? -x : x; } //lkjojhiubh
 
 void init_partie(Jeu *jeu, int lignes, int colonnes)
 {
