@@ -1,149 +1,113 @@
+/* affichage.c - Fonctions d'affichage */
 #include <stdio.h>
 #include "affichage.h"
 
 void nettoyer_ecran(void)
 {
     int i;
-    for (i = 0; i < 60; i++) {
-        printf("\n");
-    }
+    for (i = 0; i < 50; i++) printf("\n");
 }
 
 void pause_entree(void)
 {
     int c;
-    printf("\nAppuie sur Entrée pour continuer...");
-    fflush(stdout);
-
-    /* on vide la fin de ligne si besoin */
-    while (1) {
-        c = getchar();
-        if (c == '\n' || c == EOF) break;
-    }
+    printf("\nAppuie sur Entree...");
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
-void afficherEntete(void)
+void afficher_plateau(Jeu *jeu)
 {
-    printf("============================================\n");
-    printf("                 CANDY CRUSH                \n");
-    printf("============================================\n\n");
-}
-
-/* Affiche une case : si NULL, on affiche un espace (évite printf(\"%s\", NULL)). */
-static const char *contenu_case(char *contenu)
-{
-    if (contenu == NULL) return " ";
-    return contenu;
-}
-
-void afficherPlateau(JeuState *jeu)
-{
-    int x, y;
-
-    if (jeu == NULL) return;
-
-    /* ligne du haut */
+    int x, y, idx;
+    char *c;
+    
+    /* Bordure haute */
     for (y = 0; y < jeu->colonnes; y++) printf("---");
     printf("-\n");
-
+    
+    /* Lignes du plateau */
     for (x = 0; x < jeu->lignes; x++) {
         printf("| ");
         for (y = 0; y < jeu->colonnes; y++) {
-            int index = x * jeu->colonnes + y;
-            const char *contenu = contenu_case(jeu->plateau[index]);
-
-            if (jeu->mode_selection && x == jeu->selection_x && y == jeu->selection_y) {
-                printf("[%s]", contenu);
-            } else if (x == jeu->curseur_x && y == jeu->curseur_y) {
-                printf("<%s>", contenu);
-            } else {
-                printf(" %s ", contenu);
-            }
+            idx = x * jeu->colonnes + y;
+            c = jeu->plateau[idx];
+            if (c == NULL) c = " ";
+            
+            if (jeu->selection && x == jeu->select_x && y == jeu->select_y)
+                printf("[%s]", c);
+            else if (x == jeu->curseur_x && y == jeu->curseur_y)
+                printf("<%s>", c);
+            else
+                printf(" %s ", c);
         }
         printf("|\n");
     }
-
-    /* ligne du bas */
+    
+    /* Bordure basse */
     for (y = 0; y < jeu->colonnes; y++) printf("---");
     printf("-\n");
 }
 
-void afficherInfos(JeuState *jeu)
+void afficher_infos(Jeu *jeu)
 {
     int i;
-
-    const char *noms[NB_TYPES_BONBONS] = { "Mangue", "Citron", "Pomme", "Raisin", "Tomate" };
-
-    if (jeu == NULL) return;
-
-    printf("\nCoups restants : %d\n", jeu->nbcoups);
-    printf("Objectif : %d de chaque fruit\n", OBJECTIF_PAR_FRUIT);
-
-    printf("\nRecolte :\n");
-    for (i = 0; i < NB_TYPES_BONBONS; i++) {
-        printf("  %s %-7s : %2d/%d",
-               jeu->emojis[i], noms[i], jeu->nbemoji[i], OBJECTIF_PAR_FRUIT);
-
-        if (jeu->nbemoji[i] >= OBJECTIF_PAR_FRUIT) {
-            printf(" [OK]");
-        }
+    const char *noms[5] = {"Pomme", "Citron", "Raisin", "Orange", "Cerise"};
+    
+    /* Vies */
+    printf("\nVies: ");
+    for (i = 0; i < jeu->vies; i++) printf("❤️ ");
+    printf("(%d/%d)\n", jeu->vies, VIES_MAX);
+    
+    /* Temps */
+    if (jeu->temps_limite > 0)
+        printf("Temps: %d s\n", jeu->temps_restant);
+    
+    /* Coups et objectif */
+    printf("Coups: %d\n", jeu->coups);
+    printf("Objectif: %d de chaque fruit\n", jeu->objectif);
+    
+    /* Arbres niveau 3 */
+    if (jeu->objectif_arbres > 0)
+        printf("Arbres 🎄: %d/%d\n", jeu->arbres_utilises, jeu->objectif_arbres);
+    
+    /* Score par fruit */
+    printf("\nRecolte:\n");
+    for (i = 0; i < NB_FRUITS; i++) {
+        printf("  %s %-7s: %2d/%d", jeu->fruits[i], noms[i], jeu->score[i], jeu->objectif);
+        if (jeu->score[i] >= jeu->objectif) printf(" [OK]");
         printf("\n");
     }
 }
 
-void afficherControles(JeuState *jeu)
+void afficher_controles(Jeu *jeu)
 {
-    if (jeu == NULL) return;
-
-    printf("\nPosition curseur : [%d,%d]\n", jeu->curseur_x, jeu->curseur_y);
-
-    if (jeu->mode_selection) {
-        printf("Mode selection : ACTIF\n");
-        printf("Selection : [%d,%d]\n", jeu->selection_x, jeu->selection_y);
-        printf("Deplace Z Q S D puis Entrée pour permuter\n");
-        printf("P : annuler selection\n");
+    printf("\nCurseur: [%d,%d]\n", jeu->curseur_x, jeu->curseur_y);
+    
+    if (jeu->selection) {
+        printf("Selection: [%d,%d] - ACTIVE\n", jeu->select_x, jeu->select_y);
+        printf("Deplace puis P pour echanger, ou P pour annuler\n");
     } else {
-        printf("Z Q S D : deplacer\n");
-        printf("P : selectionner\n");
-        printf("Entrée : valider permutation (quand selection active)\n");
+        printf("Z/Q/S/D: deplacer | P: selectionner | X: quitter\n");
     }
-
-    printf("X : quitter la partie\n");
 }
 
-void afficherErreur(const char *message)
-{
-    printf("\n[ERREUR] %s\n", message);
-    pause_entree();
-}
-
-void afficherJeu(JeuState *jeu)
+void afficher_jeu(Jeu *jeu)
 {
     nettoyer_ecran();
-    afficherEntete();
-    afficherPlateau(jeu);
-    afficherInfos(jeu);
-    afficherControles(jeu);
+    printf("============ CANDY CRUSH ============\n");
+    afficher_plateau(jeu);
+    afficher_infos(jeu);
+    afficher_controles(jeu);
 }
 
-void afficherFinPartie(JeuState *jeu)
+void afficher_fin(Jeu *jeu)
 {
     nettoyer_ecran();
-
-    if (jeu == NULL) return;
-
-    if (jeu->victoire) {
-        printf("============================================\n");
-        printf("              VICTOIRE !                     \n");
-        printf("============================================\n\n");
-        printf("Tu as atteint tous les objectifs.\n");
-    } else {
-        printf("============================================\n");
-        printf("             FIN DE PARTIE                   \n");
-        printf("============================================\n\n");
-        printf("Plus de coups disponibles ou partie quittée.\n");
-    }
-
-    printf("\nCoups restants : %d\n", jeu->nbcoups);
+    printf("============================================\n");
+    if (jeu->victoire)
+        printf("            VICTOIRE !\n");
+    else
+        printf("            PARTIE TERMINEE\n");
+    printf("============================================\n");
+    printf("Coups restants: %d\n", jeu->coups);
     pause_entree();
 }

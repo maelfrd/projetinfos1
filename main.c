@@ -1,220 +1,243 @@
+/* main.c - Programme principal Candy Crush */
 #include <stdio.h>
 #include <string.h>
-
 #include "structures.h"
 #include "gestion_partie.h"
 #include "affichage.h"
 
-/* Lit une ligne et enlève le '\n' final. */
-static void lire_ligne(char *buf, int taille)
-{
-    int len;
-
-    if (fgets(buf, taille, stdin) == NULL) {
-        buf[0] = '\0';
-        return;
-    }
-
-    len = (int)strlen(buf);
-    if (len > 0 && buf[len - 1] == '\n') {
-        buf[len - 1] = '\0';
-    }
-}
-
-static char lire_commande_menu(void)
+static char lire_menu(void)
 {
     char buf[64];
-
-    if (fgets(buf, sizeof(buf), stdin) == NULL) {
-        return 'x';
-    }
-
-    if (buf[0] == '\n' || buf[0] == '\0') {
-        return '\n';
-    }
-
-    return buf[0]; /* minuscules recommandées */
+    if (fgets(buf, sizeof(buf), stdin) == NULL) return 'x';
+    if (buf[0] == '\n') return '\n';
+    return buf[0];
 }
 
-static int menu_principal(int partie_disponible)
+static void lire_pseudo(char *pseudo)
 {
-    const char *items[3] = { "Reprendre partie", "Nouvelle partie", "Parametres" };
-    int selection = 0;
-
-    while (1) {
-        int i;
-        char c;
-
-        nettoyer_ecran();
-
-        printf("============== MENU ==============\n\n");
-
-        for (i = 0; i < 3; i++) {
-            if (i == 0 && !partie_disponible) {
-                if (i == selection) printf(" > %s (indisponible)\n", items[i]);
-                else                printf("   %s (indisponible)\n", items[i]);
-            } else {
-                if (i == selection) printf(" > %s\n", items[i]);
-                else                printf("   %s\n", items[i]);
-            }
-        }
-
-        printf("\nCommandes : z=haut, s=bas, Entrée=valider, x=quitter\n");
-        printf("----------------------------------\n");
-
-        c = lire_commande_menu();
-
-        if (c == 'z') {
-            if (selection > 0) selection--;
-        } else if (c == 's') {
-            if (selection < 2) selection++;
-        } else if (c == 'x') {
-            return -1;
-        } else if (c == '\n') {
-            if (selection == 0 && !partie_disponible) {
-                printf("\nAucune partie a reprendre.\n");
-                pause_entree();
-            } else {
-                return selection;
-            }
-        }
-    }
-}
-
-static void demander_pseudo(char *pseudo, int taille)
-{
-    nettoyer_ecran();
-    printf("=========== NOUVELLE PARTIE ===========\n\n");
-    printf("Entre ton pseudo :\n> ");
-
-    lire_ligne(pseudo, taille);
-
-    if (pseudo[0] == '\0') {
+    int len;
+    printf("Entre ton pseudo: ");
+    if (fgets(pseudo, 32, stdin) == NULL) {
         strcpy(pseudo, "Joueur");
+        return;
     }
+    len = strlen(pseudo);
+    if (len > 0 && pseudo[len-1] == '\n')
+        pseudo[len-1] = '\0';
+    if (pseudo[0] == '\0')
+        strcpy(pseudo, "Joueur");
 }
 
-static int menu_niveaux(const char *pseudo)
+static int menu_principal(Sauvegarde *sauv)
 {
-    const char *items[3] = { "Niveau 1", "Niveau 2 (special)", "Niveau 3 (non disponible)" };
-    int selection = 0;
-
+    char c;
+    int sel = 1;
+    int nb_options;
+    
+    if (sauv->existe)
+        nb_options = 4;
+    else
+        nb_options = 3;
+    
     while (1) {
-        int i;
-        char c;
-
         nettoyer_ecran();
-        printf("============= CHOIX DU NIVEAU =============\n\n");
-        printf("Pseudo : %s\n\n", pseudo);
-
-        for (i = 0; i < 3; i++) {
-            if (i == selection) printf(" > %s\n", items[i]);
-            else                printf("   %s\n", items[i]);
+        printf("========== CANDY CRUSH ==========\n\n");
+        
+        if (sauv->existe) {
+            /* Avec sauvegarde: 1=Reprendre, 2=Nouvelle, 3=Param, 4=Quitter */
+            printf("%s Reprendre (%s - Niveau %d - %d vies)\n", 
+                   sel == 1 ? ">" : " ", sauv->pseudo, sauv->niveau_en_cours, sauv->vies);
+            printf("%s Nouvelle partie\n", sel == 2 ? ">" : " ");
+            printf("%s Parametres\n", sel == 3 ? ">" : " ");
+            printf("%s Quitter\n\n", sel == 4 ? ">" : " ");
+        } else {
+            /* Sans sauvegarde: 1=Nouvelle, 2=Param, 3=Quitter */
+            printf("%s Nouvelle partie\n", sel == 1 ? ">" : " ");
+            printf("%s Parametres\n", sel == 2 ? ">" : " ");
+            printf("%s Quitter\n\n", sel == 3 ? ">" : " ");
         }
-
-        printf("\nCommandes : z=haut, s=bas, Entrée=valider, x=retour menu\n");
-        printf("------------------------------------------\n");
-
-        c = lire_commande_menu();
-
-        if (c == 'z') {
-            if (selection > 0) selection--;
-        } else if (c == 's') {
-            if (selection < 2) selection++;
-        } else if (c == 'x') {
-            return -1;
-        } else if (c == '\n') {
-            return selection;
+        
+        printf("Z/S: naviguer | Entree: valider\n");
+        
+        c = lire_menu();
+        
+        if (c == 'z' || c == 'Z') {
+            if (sel > 1) sel--;
+        }
+        else if (c == 's' || c == 'S') {
+            if (sel < nb_options) sel++;
+        }
+        else if (c == 'x' || c == 'X') {
+            return 0;  /* Quitter */
+        }
+        else if (c == '\n') {
+            return sel;
         }
     }
 }
 
-static void ecran_parametres(void)
+static void jouer_niveau(Jeu *jeu, Sauvegarde *sauv)
 {
-    nettoyer_ecran();
-    printf("============== PARAMETRES ==============\n\n");
-    printf("Ecran vide pour le moment.\n");
-    pause_entree();
+    init_partie(jeu, 10, 10);
+    strcpy(jeu->pseudo, sauv->pseudo);
+    jeu->vies = sauv->vies;
+    
+    /* Lancer la boucle selon le niveau */
+    if (jeu->niveau == 1)
+        boucle_jeu(jeu);
+    else if (jeu->niveau == 2)
+        boucle_jeu_n2(jeu);
+    else
+        boucle_jeu_n3(jeu);
+    
+    afficher_fin(jeu);
+    
+    if (jeu->victoire) {
+        /* Niveau reussi -> passe au suivant */
+        if (sauv->niveau_en_cours < 3) {
+            sauv->niveau_en_cours++;
+            sauvegarder_partie(sauv);
+            
+            nettoyer_ecran();
+            printf("========================================\n");
+            printf("  BRAVO %s !\n", sauv->pseudo);
+            printf("  Niveau %d debloque !\n", sauv->niveau_en_cours);
+            printf("========================================\n");
+            pause_entree();
+        } else {
+            /* Jeu termine ! */
+            nettoyer_ecran();
+            printf("========================================\n");
+            printf("  FELICITATIONS %s !\n", sauv->pseudo);
+            printf("  Tu as termine le jeu !\n");
+            printf("========================================\n");
+            supprimer_sauvegarde();
+            sauv->existe = 0;
+            pause_entree();
+        }
+    } else {
+        /* Niveau perdu -> perd une vie */
+        sauv->vies--;
+        
+        if (sauv->vies <= 0) {
+            /* Plus de vies -> supprime la sauvegarde */
+            nettoyer_ecran();
+            printf("========================================\n");
+            printf("  GAME OVER %s !\n", sauv->pseudo);
+            printf("  Tu n'as plus de vies.\n");
+            printf("  Ta partie est supprimee.\n");
+            printf("========================================\n");
+            supprimer_sauvegarde();
+            sauv->existe = 0;
+            pause_entree();
+        } else {
+            /* Sauvegarde avec vies restantes */
+            sauvegarder_partie(sauv);
+            
+            nettoyer_ecran();
+            printf("========================================\n");
+            printf("  Niveau echoue !\n");
+            printf("  Vies restantes: %d\n", sauv->vies);
+            printf("========================================\n");
+            pause_entree();
+        }
+    }
+    
+    liberer_partie(jeu);
 }
 
 int main(void)
 {
-    JeuState jeu = {0};
-    int partie_initialisee = 0;
-
-    char pseudo[32];
-    pseudo[0] = '\0';
-
+    Jeu jeu;
+    Sauvegarde sauv;
+    int choix;
+    
+    /* Charger la sauvegarde si elle existe */
+    charger_sauvegarde(&sauv);
+    
     while (1) {
-        int choix = menu_principal(partie_initialisee);
-
-        if (choix == -1) {
-            if (partie_initialisee) {
-                libererPartie(&jeu);
-            }
-            nettoyer_ecran();
-            printf("Au revoir.\n");
+        choix = menu_principal(&sauv);
+        
+        /* Quitter (0 = touche X, ou dernier choix du menu) */
+        if (choix == 0) {
+            printf("Au revoir!\n");
             return 0;
         }
-
-        if (choix == 2) {
-            ecran_parametres();
-            continue;
-        }
-
-        if (choix == 1) {
-            if (partie_initialisee) {
-                libererPartie(&jeu);
-                partie_initialisee = 0;
+        
+        if (sauv.existe) {
+            /* Avec sauvegarde: 1=Reprendre, 2=Nouvelle, 3=Param, 4=Quitter */
+            
+            if (choix == 4) {
+                printf("Au revoir!\n");
+                return 0;
             }
-
-            demander_pseudo(pseudo, (int)sizeof(pseudo));
-
-            while (1) {
-                int niveau = menu_niveaux(pseudo);
-
-                if (niveau == -1) {
-                    break;
-                }
-
-                if (niveau == 0) {
-                    initialiserPartie(&jeu, 10, 10);
-                    partie_initialisee = 1;
-
-                    boucleJeu(&jeu);
-                    afficherFinPartie(&jeu);
-                    break;
-                } else if (niveau == 1) {
-                    initialiserPartie(&jeu, 10, 10);
-                    partie_initialisee = 1;
-
-                    boucleJeuNiveau2(&jeu);
-                    afficherFinPartie(&jeu);
-                    break;
-                } else {
-                    printf("\nCe niveau n'est pas encore disponible.\n");
-                    pause_entree();
-                }
-            }
-
-            continue;
-        }
-
-        if (choix == 0) {
-            if (!partie_initialisee) {
-                printf("\nAucune partie a reprendre.\n");
+            
+            if (choix == 3) {
+                nettoyer_ecran();
+                printf("Parametres: rien pour l'instant\n");
                 pause_entree();
                 continue;
             }
-
-            jeu.continuer = 1;
-
-            /* Reprendre : on reprend le niveau courant.
-               (Pour simplifier : on reprend en niveau 1 ; si tu veux,
-                on peut mémoriser le niveau plus tard.) */
-            boucleJeu(&jeu);
-            afficherFinPartie(&jeu);
-            continue;
+            
+            if (choix == 1) {
+                /* Reprendre partie */
+                jeu.niveau = sauv.niveau_en_cours;
+                jouer_niveau(&jeu, &sauv);
+                charger_sauvegarde(&sauv);
+                continue;
+            }
+            
+            if (choix == 2) {
+                /* Nouvelle partie */
+                nettoyer_ecran();
+                printf("========== NOUVELLE PARTIE ==========\n\n");
+                printf("Attention: une partie existe deja pour %s.\n", sauv.pseudo);
+                printf("Creer une nouvelle partie va l'effacer!\n\n");
+                
+                lire_pseudo(sauv.pseudo);
+                sauv.vies = VIES_MAX;
+                sauv.niveau_en_cours = 1;
+                sauv.existe = 1;
+                sauvegarder_partie(&sauv);
+                
+                jeu.niveau = 1;
+                jouer_niveau(&jeu, &sauv);
+                charger_sauvegarde(&sauv);
+                continue;
+            }
+        } else {
+            /* Sans sauvegarde: 1=Nouvelle, 2=Param, 3=Quitter */
+            
+            if (choix == 3) {
+                printf("Au revoir!\n");
+                return 0;
+            }
+            
+            if (choix == 2) {
+                nettoyer_ecran();
+                printf("Parametres: rien pour l'instant\n");
+                pause_entree();
+                continue;
+            }
+            
+            if (choix == 1) {
+                /* Nouvelle partie */
+                nettoyer_ecran();
+                printf("========== NOUVELLE PARTIE ==========\n\n");
+                
+                lire_pseudo(sauv.pseudo);
+                sauv.vies = VIES_MAX;
+                sauv.niveau_en_cours = 1;
+                sauv.existe = 1;
+                sauvegarder_partie(&sauv);
+                
+                jeu.niveau = 1;
+                jouer_niveau(&jeu, &sauv);
+                charger_sauvegarde(&sauv);
+                continue;
+            }
         }
     }
+    
+    return 0;
 }

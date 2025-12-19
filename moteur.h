@@ -1,43 +1,35 @@
+/* moteur.h - Logique du jeu */
 #ifndef MOTEUR_H
 #define MOTEUR_H
 
 #include "structures.h"
 
-/* ===================== NIVEAU 1 (existant) ===================== */
-int trouverIndexEmoji(char *emoji, char *emojis[], int nb_emojis);
-int verifierAlignementDepuis(char *plateau[], int lignes, int colonnes,
-                             int x, int y, int marques[]);
-int verifierTousAlignements(char *plateau[], int lignes, int colonnes, int marques[]);
-void supprimerBonbonsMarques(char *plateau[], int lignes, int colonnes,
-                             int marques[], char *emojis[], int nbemoji[], int nb_emojis);
-void faireTomber(char *plateau[], int lignes, int colonnes);
-void remplirCasesVides(char *plateau[], int lignes, int colonnes,
-                       char *emojis[], int nb_emojis);
-int permutationValide(char *plateau[], int lignes, int colonnes,
-                      int x1, int y1, int x2, int y2);
-void permuterBonbons(char *plateau[], int colonnes, int x1, int y1, int x2, int y2);
-void traiterAlignementsCascade(JeuState *jeu);
+/* Fonctions de base */
+int est_special(char *c);
+int est_joker(char *c);
+int est_fruit(char *c);
+int index_fruit(Jeu *jeu, char *f);
 
-/* ===================== NIVEAU 2 (nouvelles combinaisons) ===================== */
-/*
-    Niveau 2 ajoute :
-    - Alignement long (>= 6) horizontal / vertical -> crée un bonbon spécial "V"
-    - Carré 2x2 -> crée un bonbon spécial "V"
-    - Croix / T / L : 3 vertical + 3 horizontal, case commune (pas forcément au centre) -> crée un bonbon spécial "V"
-    - Utilisation du bonbon spécial : quand il est échangé avec un bonbon adjacent,
-      il supprime toute la colonne (hauteur) et déclenche une cascade.
+/* Alignements */
+int chercher_alignements(Jeu *jeu, int marques[]);
+void supprimer_marques(Jeu *jeu, int marques[]);
+void faire_tomber(Jeu *jeu);
+void remplir_vides(Jeu *jeu, int niveau2);
 
-    IMPORTANT : pas d'ANSI, pas de gestion majuscules/minuscules ici.
-*/
+/* Permutations */
+void echanger(Jeu *jeu, int x1, int y1, int x2, int y2);
+int permutation_valide(Jeu *jeu, int x1, int y1, int x2, int y2);
+void cascade(Jeu *jeu);
+void cascade_niveau2(Jeu *jeu);
 
-/* Vérifie qu'une permutation crée au moins une combinaison Niveau 2 (ou un alignement simple). */
-int permutationValideNiveau2(char *plateau[], int lignes, int colonnes,
-                             int x1, int y1, int x2, int y2);
+/* Combinaisons speciales niveau 2 */
+int detecter_speciaux(Jeu *jeu, int marques[], int speciaux[]);
+int permutation_valide_n2(Jeu *jeu, int x1, int y1, int x2, int y2);
 
-/* Cascade Niveau 2 : détecte d'abord les combinaisons les plus longues, puis les plus simples. */
-void traiterAlignementsCascadeNiveau2(JeuState *jeu);
-
-/* Active l'effet du bonbon spécial (V) : supprime toute la colonne. */
-void effetSpecialColonne(JeuState *jeu, int x, int y);
+/* Effets des bonbons speciaux */
+void effet_colonne(Jeu *jeu, int y);
+void effet_ligne(Jeu *jeu, int x);
+void effet_bombe(Jeu *jeu, int x, int y);
+void effet_arcenciel(Jeu *jeu, char *cible);
 
 #endif

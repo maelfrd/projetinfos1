@@ -1,326 +1,280 @@
-#include <stdlib.h>
-#include <time.h>
+/* gestion_partie.c - Gestion des parties */
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include "gestion_partie.h"
 #include "moteur.h"
 #include "affichage.h"
 #include "saisie.h"
 
+static int abs_val(int x) { return x < 0 ? -x : x; }
 
-/* valeur absolue : simple et lisible */
-static int valeur_absolue(int v)
+void init_partie(Jeu *jeu, int lignes, int colonnes)
 {
-    if (v < 0) return -v;
-    return v;
-}
-
-/* est-ce un espace / separateur ? */
-static int estBlanc(char c)
-{
-    if (c == ' ') return 1;
-    if (c == '\t') return 1;
-    if (c == '\n') return 1;
-    if (c == '\r') return 1;
-    return 0;
-}
-
-/* Lit une commande : z/q/s/d/p/x, ou '\n' (Entrée). Ignore les espaces. */
-static char lireCommandeLigne(void)
-{
-    char buf[128];
+    static int seed = 0;
     int i;
-
-    if (fgets(buf, sizeof(buf), stdin) == NULL) {
-        return 'x'; /* sécurité */
-    }
-
-    /* si l'utilisateur appuie juste sur Entrée */
-    if (buf[0] == '\n' || buf[0] == '\0') {
-        return '\n';
-    }
-
-    for (i = 0; buf[i] != '\0'; i++) {
-        if (!estBlanc(buf[i])) {
-            return buf[i]; /* pas de conversion : minuscules uniquement */
-        }
-    }
-
-    return '\n';
-}
-
-void initialiserPartie(JeuState *jeu, int lignes, int colonnes)
-{
-    int i;
-    int total;
-
-    if (jeu == NULL) return;
-
-    srand((unsigned int)time(NULL));
-
+    
+    if (!seed) { srand(time(NULL)); seed = 1; }
+    
     jeu->lignes = lignes;
     jeu->colonnes = colonnes;
-    jeu->emojis[0] = "🥭";
-    jeu->emojis[1] = "🍋";
-    jeu->emojis[2] = "🍏";
-    jeu->emojis[3] = "🍇";
-    jeu->emojis[4] = "🍅";
-
-    jeu->nbcoups = 50;
-
-    jeu->curseur_x = 0;
-    jeu->curseur_y = 0;
-
-    jeu->mode_selection = 0;
-    jeu->selection_x = -1;
-    jeu->selection_y = -1;
-
+    jeu->plateau = (char **)malloc(sizeof(char *) * lignes * colonnes);
+    
+    /* Fruits */
+    jeu->fruits[0] = "🍎";
+    jeu->fruits[1] = "🍋";
+    jeu->fruits[2] = "🍇";
+    jeu->fruits[3] = "🍊";
+    jeu->fruits[4] = "🍒";
+    
+    for (i = 0; i < NB_FRUITS; i++) jeu->score[i] = 0;
+    
+    /* Parametres selon niveau */
+    if (jeu->niveau == 1) {
+        jeu->coups = COUPS_N1;
+        jeu->objectif = OBJECTIF_N1;
+        jeu->temps_limite = TEMPS_N1;
+        jeu->objectif_arbres = 0;
+    } else if (jeu->niveau == 2) {
+        jeu->coups = COUPS_N2;
+        jeu->objectif = OBJECTIF_N2;
+        jeu->temps_limite = TEMPS_N2;
+        jeu->objectif_arbres = 0;
+    } else {
+        jeu->coups = COUPS_N3;
+        jeu->objectif = OBJECTIF_N3;
+        jeu->temps_limite = TEMPS_N3;
+        jeu->objectif_arbres = OBJECTIF_ARBRES;
+    }
+    
+    jeu->vies = VIES_MAX;
+    jeu->arbres_utilises = 0;
+    jeu->temps_debut = time(NULL);
+    jeu->temps_restant = jeu->temps_limite;
+    
+    /* Remplir le plateau */
+    for (i = 0; i < lignes * colonnes; i++)
+        jeu->plateau[i] = jeu->fruits[rand() % NB_FRUITS];
+    
+    /* Eliminer les alignements de depart */
+    if (jeu->niveau == 1)
+        cascade(jeu);
+    else
+        cascade_niveau2(jeu);
+    
+    /* Remettre les scores a zero apres le nettoyage initial */
+    for (i = 0; i < NB_FRUITS; i++) jeu->score[i] = 0;
+    
+    jeu->curseur_x = jeu->curseur_y = 0;
+    jeu->selection = 0;
+    jeu->select_x = jeu->select_y = -1;
+    jeu->en_cours = 1;
     jeu->victoire = 0;
-    jeu->continuer = 1;
-
-    total = lignes * colonnes;
-
-    jeu->plateau = (char**)malloc((size_t)total * sizeof(char*));
-    if (jeu->plateau == NULL) {
-        jeu->continuer = 0;
-        return;
-    }
-
-    for (i = 0; i < NB_TYPES_BONBONS; i++) {
-        jeu->nbemoji[i] = 0;
-    }
-
-    for (i = 0; i < total; i++) {
-        int r = rand() % NB_TYPES_BONBONS;
-        jeu->plateau[i] = jeu->emojis[r];
-    }
 }
 
-int verifierVictoire(JeuState *jeu)
+void liberer_partie(Jeu *jeu)
+{
+    if (jeu->plateau) { free(jeu->plateau); jeu->plateau = NULL; }
+}
+
+int verifier_victoire(Jeu *jeu)
 {
     int i;
-
-    if (jeu == NULL) return 0;
-
-    for (i = 0; i < NB_TYPES_BONBONS; i++) {
-        if (jeu->nbemoji[i] < OBJECTIF_PAR_FRUIT) {
-            return 0;
-        }
-    }
+    for (i = 0; i < NB_FRUITS; i++)
+        if (jeu->score[i] < jeu->objectif) return 0;
+    if (jeu->objectif_arbres > 0 && jeu->arbres_utilises < jeu->objectif_arbres)
+        return 0;
     return 1;
 }
 
-void libererPartie(JeuState *jeu)
+int gerer_echange(Jeu *jeu)
 {
-    if (jeu == NULL) return;
-
-    if (jeu->plateau != NULL) {
-        free(jeu->plateau);
-        jeu->plateau = NULL;
-    }
-}
-
-int gererPermutation(JeuState *jeu)
-{
-    int dx, dy;
-    int ok;
-
-    if (jeu == NULL) return -2;
-
-    dx = valeur_absolue(jeu->curseur_x - jeu->selection_x);
-    dy = valeur_absolue(jeu->curseur_y - jeu->selection_y);
-
+    int dx = abs_val(jeu->curseur_x - jeu->select_x);
+    int dy = abs_val(jeu->curseur_y - jeu->select_y);
+    
+    /* Pas adjacent */
     if (!((dx == 1 && dy == 0) || (dx == 0 && dy == 1))) {
-        jeu->mode_selection = 0;
-        jeu->selection_x = -1;
-        jeu->selection_y = -1;
+        jeu->selection = 0;
         return -1;
     }
-
-    ok = permutationValide(
-        jeu->plateau, jeu->lignes, jeu->colonnes,
-        jeu->selection_x, jeu->selection_y,
-        jeu->curseur_x, jeu->curseur_y
-    );
-
-    if (!ok) {
-        jeu->mode_selection = 0;
-        jeu->selection_x = -1;
-        jeu->selection_y = -1;
-        return -2;
+    
+    /* Pas valide */
+    if (!permutation_valide(jeu, jeu->select_x, jeu->select_y, jeu->curseur_x, jeu->curseur_y)) {
+        jeu->selection = 0;
+        return -1;
     }
-
-    permuterBonbons(
-        jeu->plateau, jeu->colonnes,
-        jeu->selection_x, jeu->selection_y,
-        jeu->curseur_x, jeu->curseur_y
-    );
-
-    jeu->nbcoups--;
-
-    traiterAlignementsCascade(jeu);
-
-    jeu->mode_selection = 0;
-    jeu->selection_x = -1;
-    jeu->selection_y = -1;
-
+    
+    echanger(jeu, jeu->select_x, jeu->select_y, jeu->curseur_x, jeu->curseur_y);
+    jeu->coups--;
+    cascade(jeu);
+    jeu->selection = 0;
     return 0;
 }
 
-void boucleJeu(JeuState *jeu)
+int gerer_echange_n2(Jeu *jeu)
 {
-    if (jeu == NULL) return;
-
-    while (jeu->continuer) {
-
-        if (jeu->nbcoups <= 0) {
-            break;
-        }
-
-        if (verifierVictoire(jeu)) {
-            jeu->victoire = 1;
-            break;
-        }
-
-        afficherJeu(jeu);
-
-        {
-            char c = lireCommandeLigne();
-
-            if (c == '\n') {
-                if (jeu->mode_selection) {
-                    int r = gererPermutation(jeu);
-                    if (r == -1) afficherErreur("Les bonbons doivent etre adjacents !");
-                    if (r == -2) afficherErreur("Permutation invalide (aucun alignement) !");
-                }
-                continue;
-            }
-
-            appliquerCommande(jeu, c);
-        }
-    }
-
-    jeu->victoire = verifierVictoire(jeu);
-}
-
-
-/* ===================== NIVEAU 2 ===================== */
-/* ===================== NIVEAU 2 ===================== */
-/* Même règles de déplacement, mais :
-   - combinaisons avancées (niveau 2)
-   - bonbon spécial "V" : lorsqu'il est échangé, il supprime toute la colonne
-*/
-
-static int estV(char *c)
-{
-    if (c == NULL) return 0;
-    if (c[0] == 'V' && c[1] == '\0') return 1;
-    return 0;
-}
-
-int gererPermutationNiveau2(JeuState *jeu)
-{
-    int dx, dy;
-    int x1, y1, x2, y2;
-    int idx1, idx2;
+    int dx, dy, i1, i2;
     char *a, *b;
-
-    if (jeu == NULL) return -2;
-
-    dx = valeur_absolue(jeu->curseur_x - jeu->selection_x);
-    dy = valeur_absolue(jeu->curseur_y - jeu->selection_y);
-
-    /* adjacent ? */
+    
+    dx = abs_val(jeu->curseur_x - jeu->select_x);
+    dy = abs_val(jeu->curseur_y - jeu->select_y);
+    
     if (!((dx == 1 && dy == 0) || (dx == 0 && dy == 1))) {
-        jeu->mode_selection = 0;
-        jeu->selection_x = -1;
-        jeu->selection_y = -1;
+        jeu->selection = 0;
         return -1;
     }
-
-    x1 = jeu->selection_x;
-    y1 = jeu->selection_y;
-    x2 = jeu->curseur_x;
-    y2 = jeu->curseur_y;
-
-    idx1 = x1 * jeu->colonnes + y1;
-    idx2 = x2 * jeu->colonnes + y2;
-
-    a = jeu->plateau[idx1];
-    b = jeu->plateau[idx2];
-
-    /* CAS 1 : un spécial est impliqué -> effet colonne */
-    if (estV(a) || estV(b)) {
-
-        permuterBonbons(jeu->plateau, jeu->colonnes, x1, y1, x2, y2);
-        jeu->nbcoups--;
-
-        /* après permutation : on cherche où est le V */
-        if (estV(jeu->plateau[idx1])) {
-            effetSpecialColonne(jeu, x1, y1);
-        } else if (estV(jeu->plateau[idx2])) {
-            effetSpecialColonne(jeu, x2, y2);
+    
+    i1 = jeu->select_x * jeu->colonnes + jeu->select_y;
+    i2 = jeu->curseur_x * jeu->colonnes + jeu->curseur_y;
+    a = jeu->plateau[i1];
+    b = jeu->plateau[i2];
+    
+    /* Si un bonbon special est implique */
+    if (est_special(a) || est_special(b)) {
+        echanger(jeu, jeu->select_x, jeu->select_y, jeu->curseur_x, jeu->curseur_y);
+        jeu->coups--;
+        
+        /* Apres l'echange */
+        a = jeu->plateau[i1];
+        b = jeu->plateau[i2];
+        
+        /* Arc-en-ciel en priorite */
+        if (strcmp(a, EMOJI_ARCENCIEL) == 0) {
+            effet_arcenciel(jeu, b);
+            jeu->plateau[i1] = NULL;
+        } else if (strcmp(b, EMOJI_ARCENCIEL) == 0) {
+            effet_arcenciel(jeu, a);
+            jeu->plateau[i2] = NULL;
+        } else {
+            if (strcmp(a, EMOJI_BOMBE) == 0) effet_bombe(jeu, jeu->select_x, jeu->select_y);
+            else if (strcmp(a, EMOJI_BOOMERANG) == 0) effet_ligne(jeu, jeu->select_x);
+            else if (strcmp(a, EMOJI_ARBRE) == 0) { effet_colonne(jeu, jeu->select_y); jeu->arbres_utilises++; }
+            
+            if (strcmp(b, EMOJI_BOMBE) == 0) effet_bombe(jeu, jeu->curseur_x, jeu->curseur_y);
+            else if (strcmp(b, EMOJI_BOOMERANG) == 0) effet_ligne(jeu, jeu->curseur_x);
+            else if (strcmp(b, EMOJI_ARBRE) == 0) { effet_colonne(jeu, jeu->curseur_y); jeu->arbres_utilises++; }
         }
-
-        traiterAlignementsCascadeNiveau2(jeu);
-
-        jeu->mode_selection = 0;
-        jeu->selection_x = -1;
-        jeu->selection_y = -1;
-
+        
+        cascade_niveau2(jeu);
+        jeu->selection = 0;
         return 0;
     }
-
-    /* CAS 2 : permutation normale -> doit être valide niveau 2 */
-    if (!permutationValideNiveau2(jeu->plateau, jeu->lignes, jeu->colonnes, x1, y1, x2, y2)) {
-        jeu->mode_selection = 0;
-        jeu->selection_x = -1;
-        jeu->selection_y = -1;
-        return -2;
+    
+    /* Permutation normale */
+    if (!permutation_valide_n2(jeu, jeu->select_x, jeu->select_y, jeu->curseur_x, jeu->curseur_y)) {
+        jeu->selection = 0;
+        return -1;
     }
-
-    permuterBonbons(jeu->plateau, jeu->colonnes, x1, y1, x2, y2);
-    jeu->nbcoups--;
-
-    traiterAlignementsCascadeNiveau2(jeu);
-
-    jeu->mode_selection = 0;
-    jeu->selection_x = -1;
-    jeu->selection_y = -1;
-
+    
+    echanger(jeu, jeu->select_x, jeu->select_y, jeu->curseur_x, jeu->curseur_y);
+    jeu->coups--;
+    cascade_niveau2(jeu);
+    jeu->selection = 0;
     return 0;
 }
 
-void boucleJeuNiveau2(JeuState *jeu)
+void boucle_jeu(Jeu *jeu)
 {
-    if (jeu == NULL) return;
-
-    while (jeu->continuer) {
-
-        if (jeu->nbcoups <= 0) break;
-
-        if (verifierVictoire(jeu)) {
-            jeu->victoire = 1;
-            break;
+    char cmd;
+    
+    while (jeu->en_cours && jeu->coups > 0 && !verifier_victoire(jeu)) {
+        /* Temps */
+        if (jeu->temps_limite > 0) {
+            jeu->temps_restant = jeu->temps_limite - (int)(time(NULL) - jeu->temps_debut);
+            if (jeu->temps_restant <= 0) break;
         }
-
-        afficherJeu(jeu);
-
-        {
-            char c = lireCommandeLigne();
-
-            if (c == '\n') {
-                if (jeu->mode_selection) {
-                    int r = gererPermutationNiveau2(jeu);
-                    if (r == -1) afficherErreur("Les bonbons doivent etre adjacents !");
-                    if (r == -2) afficherErreur("Permutation invalide (aucune combinaison) !");
-                }
-                continue;
-            }
-
-            appliquerCommande(jeu, c);
+        
+        afficher_jeu(jeu);
+        cmd = lire_commande();
+        appliquer_commande(jeu, cmd);
+        
+        /* Tente l'echange si selection active et case differente */
+        if ((cmd == 'p' || cmd == 'P') && jeu->selection &&
+            (jeu->curseur_x != jeu->select_x || jeu->curseur_y != jeu->select_y)) {
+            gerer_echange(jeu);
         }
     }
+    jeu->victoire = verifier_victoire(jeu);
+}
 
-    jeu->victoire = verifierVictoire(jeu);
+void boucle_jeu_n2(Jeu *jeu)
+{
+    char cmd;
+    
+    while (jeu->en_cours && jeu->coups > 0 && !verifier_victoire(jeu)) {
+        if (jeu->temps_limite > 0) {
+            jeu->temps_restant = jeu->temps_limite - (int)(time(NULL) - jeu->temps_debut);
+            if (jeu->temps_restant <= 0) break;
+        }
+        
+        afficher_jeu(jeu);
+        cmd = lire_commande();
+        appliquer_commande(jeu, cmd);
+        
+        if ((cmd == 'p' || cmd == 'P') && jeu->selection &&
+            (jeu->curseur_x != jeu->select_x || jeu->curseur_y != jeu->select_y)) {
+            gerer_echange_n2(jeu);
+        }
+    }
+    jeu->victoire = verifier_victoire(jeu);
+}
+
+void boucle_jeu_n3(Jeu *jeu)
+{
+    boucle_jeu_n2(jeu);  /* Meme logique, objectifs differents */
+}
+
+/* ========== SAUVEGARDE ========== */
+
+void sauvegarder_partie(Sauvegarde *sauv)
+{
+    FILE *f = fopen(FICHIER_SAUVEGARDE, "w");
+    if (f == NULL) return;
+    
+    fprintf(f, "%s\n", sauv->pseudo);
+    fprintf(f, "%d\n", sauv->vies);
+    fprintf(f, "%d\n", sauv->niveau_en_cours);
+    
+    fclose(f);
+}
+
+int charger_sauvegarde(Sauvegarde *sauv)
+{
+    FILE *f = fopen(FICHIER_SAUVEGARDE, "r");
+    if (f == NULL) {
+        sauv->existe = 0;
+        return 0;
+    }
+    
+    if (fgets(sauv->pseudo, 32, f) == NULL) {
+        fclose(f);
+        sauv->existe = 0;
+        return 0;
+    }
+    /* Enlever le \n */
+    int len = strlen(sauv->pseudo);
+    if (len > 0 && sauv->pseudo[len-1] == '\n')
+        sauv->pseudo[len-1] = '\0';
+    
+    if (fscanf(f, "%d", &sauv->vies) != 1) {
+        fclose(f);
+        sauv->existe = 0;
+        return 0;
+    }
+    
+    if (fscanf(f, "%d", &sauv->niveau_en_cours) != 1) {
+        fclose(f);
+        sauv->existe = 0;
+        return 0;
+    }
+    
+    fclose(f);
+    sauv->existe = 1;
+    return 1;
+}
+
+void supprimer_sauvegarde(void)
+{
+    remove(FICHIER_SAUVEGARDE);
 }

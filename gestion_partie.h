@@ -1,17 +1,21 @@
+/* gestion_partie.h */
 #ifndef GESTION_PARTIE_H
 #define GESTION_PARTIE_H
 
 #include "structures.h"
 
-/* Niveau 1 (inchangé) */
-void initialiserPartie(JeuState *jeu, int lignes, int colonnes);
-int verifierVictoire(JeuState *jeu);
-void libererPartie(JeuState *jeu);
-int gererPermutation(JeuState *jeu);
-void boucleJeu(JeuState *jeu);
+void init_partie(Jeu *jeu, int lignes, int colonnes);
+void liberer_partie(Jeu *jeu);
+int verifier_victoire(Jeu *jeu);
+int gerer_echange(Jeu *jeu);
+int gerer_echange_n2(Jeu *jeu);
+void boucle_jeu(Jeu *jeu);
+void boucle_jeu_n2(Jeu *jeu);
+void boucle_jeu_n3(Jeu *jeu);
 
-/* Niveau 2 (nouvelles combinaisons et bonbon spécial) */
-int gererPermutationNiveau2(JeuState *jeu);
-void boucleJeuNiveau2(JeuState *jeu);
+/* Sauvegarde */
+void sauvegarder_partie(Sauvegarde *sauv);
+int charger_sauvegarde(Sauvegarde *sauv);
+void supprimer_sauvegarde(void);
 
 #endif
