@@ -1,35 +1,39 @@
-/* moteur.h - Logique du jeu */
-#ifndef MOTEUR_H
-#define MOTEUR_H
 
-#include "structures.h"
+/* moteur.h - Logique du jeu */                             /* En-tete du fichier */
+#ifndef MOTEUR_H                                            /* Protection contre inclusion multiple */
+#define MOTEUR_H                                            /* Debut de la definition du header */
 
-/* Fonctions de base */
-int est_special(char *c);
-int est_joker(char *c);
-int est_fruit(char *c);
-int index_fruit(Jeu *jeu, char *f);
+#include "structures.h"                                     /* Inclut les structures du jeu */
 
-/* Alignements */
-int chercher_alignements(Jeu *jeu, int marques[]);
-void supprimer_marques(Jeu *jeu, int marques[]);
-void faire_tomber(Jeu *jeu);
-void remplir_vides(Jeu *jeu, int niveau2);
+/* Fonctions de base */                                     /* Section fonctions de base */
+int est_special(char *c);                                   /* Verifie si emoji est special (bombe, etc.) */
+int est_joker(char *c);                                     /* Verifie si emoji est un joker */
+int est_fruit(char *c);                                     /* Verifie si emoji est un fruit normal */
+int index_fruit(Jeu *jeu, char *f);                         /* Retourne index du fruit (0-4) ou -1 */
 
-/* Permutations */
-void echanger(Jeu *jeu, int x1, int y1, int x2, int y2);
-int permutation_valide(Jeu *jeu, int x1, int y1, int x2, int y2);
-void cascade(Jeu *jeu);
-void cascade_niveau2(Jeu *jeu);
+/* Menu */                                                  /* Section menu */
+int menu(Sauvegarde *sauv);                                 /* Affiche menu et retourne choix utilisateur */
 
-/* Combinaisons speciales niveau 2 */
-int detecter_speciaux(Jeu *jeu, int marques[], int speciaux[]);
-int permutation_valide_n2(Jeu *jeu, int x1, int y1, int x2, int y2);
+/* Alignements */                                           /* Section alignements */
+int chercher_alignements(Jeu *jeu, int marques[]);          /* Trouve alignements de 3+, remplit marques[] */
+void supprimer_marques(Jeu *jeu, int marques[]);            /* Supprime cases marquees, compte points */
+void faire_tomber(Jeu *jeu);                                /* Applique gravite (fruits tombent) */
+void remplir_vides(Jeu *jeu, int niveau2);                  /* Remplit cases vides avec nouveaux fruits */
 
-/* Effets des bonbons speciaux */
-void effet_colonne(Jeu *jeu, int y);
-void effet_ligne(Jeu *jeu, int x);
-void effet_bombe(Jeu *jeu, int x, int y);
-void effet_arcenciel(Jeu *jeu, char *cible);
+/* Permutations */                                          /* Section permutations */
+void echanger(Jeu *jeu, int x1, int y1, int x2, int y2);    /* Echange deux cases adjacentes */
+int permutation_valide(Jeu *jeu, int x1, int y1, int x2, int y2);  /* Verifie si echange cree alignement */
+void cascade(Jeu *jeu);                                     /* Boucle suppression/gravite/remplissage (N1) */
+void cascade_niveau2(Jeu *jeu);                             /* Cascade avec detection speciaux (N2/N3) */
 
-#endif
+/* Combinaisons speciales niveau 2 */                       /* Section combinaisons speciales */
+int detecter_speciaux(Jeu *jeu, int marques[], int speciaux[]);  /* Detecte formations speciales */
+int permutation_valide_n2(Jeu *jeu, int x1, int y1, int x2, int y2);  /* Validation echange niveau 2 */
+
+/* Effets des bonbons speciaux */                           /* Section effets speciaux */
+void effet_colonne(Jeu *jeu, int y);                        /* Arbre: supprime colonne entiere */
+void effet_ligne(Jeu *jeu, int x);                          /* Boomerang: supprime ligne entiere */
+void effet_bombe(Jeu *jeu, int x, int y);                   /* Bombe: supprime zone 3x3 */
+void effet_arcenciel(Jeu *jeu, char *cible);                /* Arc-en-ciel: supprime tous fruits d'un type */
+
+#endif                                                      /* Fin de la protection d'inclusion */
