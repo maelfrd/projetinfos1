@@ -23,7 +23,7 @@ void afficher_plateau(Jeu *jeu)
 {                                                           
     int x, y, idx;                                          /* Coordonnees et index dans tableau */
     char *c;                                                
-                                                            /* Ligne vide pour lisibilite */
+                                                          
     /* Bordure haute */                                    
     for (y = 0; y < jeu->colonnes; y++)                     
         printf("----");                                     /* Affiche segment de bordure */
@@ -93,9 +93,9 @@ void afficher_controles(Jeu *jeu)                           /* Affiche les contr
                                                             
     if (jeu->selection) {                                   /* Si une selection est active */
         printf("Selection: [%d,%d] - ACTIVE\n", jeu->select_x, jeu->select_y);  /* Affiche position selectionnee */
-        printf("Deplace puis P pour echanger, ou P pour annuler\n");  /* Instructions echange */
-    } else {                                                /* Si pas de selection */
-        printf("Z/Q/S/D: deplacer | P: selectionner | X: quitter\n");  /* Instructions normales */
+        printf("Deplace puis P pour echanger, ou P pour annuler\n");  /* Instructions pour effectuer un  echange */
+    } else {                                                
+        printf("Z/Q/S/D: deplacer | P: selectionner | X: quitter\n");  /* Instructions deplacement  */
     }                                                       /* Fin du if selection */
 }                                                           /* Fin de afficher_controles */
 
@@ -104,7 +104,7 @@ void afficher_jeu(Jeu *jeu)                                 /* Affiche l'ecran d
     nettoyer_ecran();                                  
     printf("              CANDY CRUSH \n");      
     afficher_plateau(jeu);                                  
-    afficher_infos(jeu);                                    /* Affiche les informations d'un niveau  */
+    afficher_infos(jeu);                                  
     afficher_controles(jeu);                         
 }                                                       
 
@@ -112,20 +112,20 @@ void afficher_fin(Jeu *jeu)                                 /* Affiche l'ecran d
 {
     nettoyer_ecran();                                      
     printf("\n");                                           
-    if (jeu->victoire)                                      /* Si le joueur a gagne */
+    if (jeu->victoire)                                      
         printf("            VICTOIRE !\n");                 /* Affiche message victoire */
-    else                                                    /* Si le joueur a perdu */
-        printf("            PARTIE TERMINEE\n\n");          /* Affiche message fin */
+    else                                                   
+        printf("            PARTIE TERMINEE\n\n");          
     printf("Coups restants: %d\n", jeu->coups);             /* Affiche coups restants */
-    pause_entree();                                         /* Attend appui Entree */
+    pause_entree();                                        
 }                                                           
 
 /*        AFFICHAGE DES MENUS */             
 
-void afficher_titre(void)                                   /* Affiche le titre du jeu */
-{                                                           /* Debut de la fonction */
-    printf("              CANDY CRUSH \n\n");               /* Affiche titre centre */
-}                                                           /* Fin de afficher_titre */
+void afficher_titre(void)                                  
+{                                                           
+    printf("              CANDY CRUSH \n\n");               
+}                                                          
 
 void afficher_menu_avec_sauvegarde(int selection, Sauvegarde *sauv)  /* Affiche menu avec sauvegarde */
 {                                                        
@@ -134,9 +134,9 @@ void afficher_menu_avec_sauvegarde(int selection, Sauvegarde *sauv)  /* Affiche 
                                                            
     printf("%s Reprendre (%s - Niveau %d - %d vies)\n",     /* Option 1: Reprendre */
            selection == 1 ? ">" : " ",                      /* Fleche si selectionne */
-           sauv->pseudo,                                    /* Pseudo sauvegarde */
-           sauv->niveau_en_cours,                           /* Niveau sauvegarde */
-           sauv->vies);                                     /* Vies sauvegardees */
+           sauv->pseudo,                                   
+           sauv->niveau_en_cours,                 
+           sauv->vies);                                    
     printf("%s Nouvelle partie\n", selection == 2 ? ">" : " ");  /* Option 2: Nouvelle partie */
     printf("%s Parametres\n", selection == 3 ? ">" : " ");  /* Option 3: Parametres */
     printf("%s Quitter\n\n", selection == 4 ? ">" : " ");   /* Option 4: Quitter */
@@ -153,15 +153,15 @@ void afficher_menu_sans_sauvegarde(int selection)
     printf("%s Parametres\n", selection == 2 ? ">" : " ");  /* Option 2: Parametres */
     printf("%s Quitter\n\n", selection == 3 ? ">" : " ");   /* Option 3: Quitter */
                                                            
-    printf("Z/S: naviguer | Entree: valider\n");            /* Instructions navigation */
-}                                                           /* Fin de afficher_menu_sans_sauvegarde */
+    printf("Z/S: naviguer | Entree: valider\n");            /* Instructions  de deplacement */
+}                                                           
 
-void afficher_parametres(void)                              /* Affiche l'ecran des parametres */
-{                                                           /* Debut de la fonction */
+void afficher_parametres(void)                              
+{                                                     
     nettoyer_ecran();                                      
-    printf("Parametres: rien pour l'instant\n");            /* Message placeholder */
-    pause_entree();                                         /* Attend appui Entree */
-}                                                           /* Fin de afficher_parametres */
+    printf("Parametres: rien pour l'instant\n");           
+    pause_entree();                                     
+}                                                         
 
 /*           progression d'un niveau  */        
 
@@ -170,10 +170,10 @@ void afficher_niveau_debloque(const char *pseudo, int niveau)
     nettoyer_ecran();                               
     printf(" \n");                                       
     printf("  BRAVO %s !\n", pseudo);                       /* Felicitations avec pseudo */
-    printf("  Niveau %d debloque !\n", niveau);             /* Annonce nouveau niveau */
+    printf("  Niveau %d debloque !\n", niveau);            
     printf("\n");                                           
-    pause_entree();                                         /* Attend appui Entree */
-}                                                           /* Fin de afficher_niveau_debloque */
+    pause_entree();                                         
+}                                                         
 
 void afficher_jeu_termine(const char *pseudo)               /* Affiche message jeu termine */
 {                                                           
@@ -233,7 +233,7 @@ char lire_menu(void)                                        /* Lit une touche da
     if (fgets(buf, sizeof(buf), stdin) == NULL)             /* Lit ligne depuis clavier */
         return 'x';                                         /* Si erreur, retourne quitter */
     if (buf[0] == '\n')                                     /* Si juste Entree */
-        return '\n';                                        /* Retourne newline */
+        return '\n';                                        
     return buf[0];                                          /* Retourne premier caractere */
 }                                                          
 
@@ -242,8 +242,8 @@ void lire_pseudo(char *pseudo)                              /* Demande et lit le
     int len;                                                /* Variable pour longueur chaine */
     printf("Entre ton pseudo: ");                           
     if (fgets(pseudo, 32, stdin) == NULL) {                 /* Lit pseudo (max 31 chars) */
-        strcpy(pseudo, "Joueur");                           /* Si erreur, pseudo par defaut */
-        return;                                             /* Sort de la fonction */
+        strcpy(pseudo, "Joueur");                           
+        return;                                             
     }                                                      
     len = strlen(pseudo);                                   /* Calcule longueur du pseudo */
     if (len > 0 && pseudo[len-1] == '\n')                  
