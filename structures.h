@@ -4,14 +4,14 @@
 
 #define NB_FRUITS 5                                         
 
-/* Bonbons speciaux */                                      /* Commentaire de section */
+/* Bonbons speciaux */      
 #define EMOJI_ARBRE     "🎄"                                /* Emoji sapin: efface une colonne */
 #define EMOJI_BOMBE     "💣"                                /* Emoji bombe: efface zone 3x3 */
 #define EMOJI_BOOMERANG "🥏"                                /* Emoji boomerang: efface une ligne */
 #define EMOJI_ARCENCIEL "🌈"                                /* Emoji arc-en-ciel: efface tous fruits d'un type */
 #define EMOJI_JOKER     "🃏"                                /* Emoji joker: remplace n'importe quel fruit */
 
-/* Parametres de jeu */                                     /* Commentaire de section */
+/* Parametres de jeu */                                     
 #define VIES_MAX 3                                          /* Nombre maximum de vies du joueur */
 #define COUPS_N1 40                                         /* Nombre de coups autorises niveau 1 */
 #define COUPS_N2 35                                         /* Nombre de coups autorises niveau 2 */
