@@ -7,7 +7,8 @@
 #include "affichage.h"                                     
 #include "saisie.h"                                        
 
-static int abs_val(int x) { return x < 0 ? -x : x; }        /* renvoie la valeur absolue de x */
+static int abs_val(int x) { return x < 0 ? -x : x; }        /* renvoie la valeur absolue de x
+si l'on rentre -X cela permet de renvoyer x qui est alors positifs pour un deplacement de case */
 
 void init_partie(Jeu *jeu, int lignes, int colonnes)       
 {
