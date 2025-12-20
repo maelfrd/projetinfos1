@@ -9,6 +9,8 @@
 #include "affichage.h"                                      
 #include "moteur.h"                                         
 
+
+// fonction accessible uniquement depuis ce fichier//
 static void boucle_principale(Sauvegarde *sauv);            /* Prototype boucle principale */
 static void traiter_choix_avec_sauvegarde(int choix, Sauvegarde *sauv);  /* Prototype avec sauv */
 static void traiter_choix_sans_sauvegarde(int choix, Sauvegarde *sauv);  /* Prototype sans sauv */
