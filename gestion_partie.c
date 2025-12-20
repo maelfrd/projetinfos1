@@ -1,22 +1,23 @@
-/* gestion_partie.c - Gestion des parties */                /* En-tete du fichier */
-#include <stdio.h>                                          /* Bibliotheque entrees/sorties standard */
-#include <stdlib.h>                                         /* Bibliotheque allocation memoire */
-#include <string.h>                                         /* Bibliotheque manipulation chaines */
-#include <time.h>                                           /* Bibliotheque gestion du temps */
-#include "gestion_partie.h"                                 /* Header gestion partie */
-#include "moteur.h"                                         /* Header moteur de jeu */
-#include "affichage.h"                                      /* Header fonctions affichage */
-#include "saisie.h"                                         /* Header fonctions saisie */
+#include <stdio.h>                                         
+#include <stdlib.h>                                         
+#include <string.h>                                        
+#include <time.h>                                           
+#include "gestion_partie.h"                                
+#include "moteur.h"                                         
+#include "affichage.h"                                     
+#include "saisie.h"                                        
 
-static int abs_val(int x) { return x < 0 ? -x : x; }        /* Valeur absolue d'un entier */
+static int abs_val(int x) { return x < 0 ? -x : x; }        /* renvoie la valeur absolue de x */
 
-void init_partie(Jeu *jeu, int lignes, int colonnes)        /* Initialise une nouvelle partie */
+void init_partie(Jeu *jeu, int lignes, int colonnes)       
 {
-    static int seed = 0;                                    /* Variable statique pour srand */
-    int i;                                                  /* Compteur de boucle */
-    if (!seed) { srand(time(NULL)); seed = 1; }             /* Init generateur aleatoire une fois */
-    jeu->lignes = lignes;                                   /* Definit nombre de lignes */
-    jeu->colonnes = colonnes;                               /* Definit nombre de colonnes */
+    static int seed = 0;                                    
+    int i;                                                  
+    if (!seed) { srand(time(NULL)); seed = 1; }             /* Prépare le générateur de hasard en l'initialisant une seule fois 
+                                                            (grâce à la variable seed qui garde en mémoire si c'est déjà fait) 
+                                                            et déclare un compteur i pour les boucles */
+    jeu->lignes = lignes;                                   /* Definit le nombre de lignes */
+    jeu->colonnes = colonnes;                               /* Definit le nombre de colonnes */
     jeu->plateau = (char **)malloc(sizeof(char *) * lignes * colonnes);  /* Alloue plateau */
     jeu->fruits[0] = "🍏";                                  /* Emoji pomme verte */
     jeu->fruits[1] = "🍋";                                  /* Emoji citron */
