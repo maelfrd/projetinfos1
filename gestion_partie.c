@@ -13,51 +13,53 @@ void init_partie(Jeu *jeu, int lignes, int colonnes)
 {
     static int seed = 0;                                    
     int i;                                                  
-    if (!seed) { srand(time(NULL)); seed = 1; }             /* Prépare le générateur de hasard en l'initialisant une seule fois 
-                                                            (grâce à la variable seed qui garde en mémoire si c'est déjà fait) 
-                                                            et déclare un compteur i pour les boucles */
-    jeu->lignes = lignes;                                   /* Definit le nombre de lignes */
-    jeu->colonnes = colonnes;                               /* Definit le nombre de colonnes */
-    jeu->plateau = (char **)malloc(sizeof(char *) * lignes * colonnes);  /* Alloue plateau */
-    jeu->fruits[0] = "🍏";                                  /* Emoji pomme verte */
-    jeu->fruits[1] = "🍋";                                  /* Emoji citron */
-    jeu->fruits[2] = "🍇";                                  /* Emoji raisin */
-    jeu->fruits[3] = "🍊";                                  /* Emoji orange */
-    jeu->fruits[4] = "🥥";                                  /* Emoji noix de coco */
-    for (i = 0; i < NB_FRUITS; i++) jeu->score[i] = 0;      /* Init scores a 0 */
-    if (jeu->niveau == 1) {                                 /* Si niveau 1 */
-        jeu->coups = COUPS_N1;                              /* 40 coups */
-        jeu->objectif = OBJECTIF_N1;                        /* 25 fruits/type */
-        jeu->temps_limite = TEMPS_N1;                       /* 240 secondes */
-        jeu->objectif_arbres = 0;                           /* Pas d'arbres */
-    } else if (jeu->niveau == 2) {                          /* Si niveau 2 */
-        jeu->coups = COUPS_N2;                              /* 35 coups */
-        jeu->objectif = OBJECTIF_N2;                        /* 30 fruits/type */
-        jeu->temps_limite = TEMPS_N2;                       /* 210 secondes */
-        jeu->objectif_arbres = 0;                           /* Pas d'arbres */
-    } else {                                                /* Niveau 3 */
-        jeu->coups = COUPS_N3;                              /* 30 coups */
-        jeu->objectif = OBJECTIF_N3;                        /* 35 fruits/type */
-        jeu->temps_limite = TEMPS_N3;                       /* 180 secondes */
-        jeu->objectif_arbres = OBJECTIF_ARBRES;             /* 3 arbres requis */
+    if (!seed) { srand(time(NULL)); seed = 1; }                         /* Prépare le générateur de hasard en l'initialisant une seule fois 
+                                                                        (grâce à la variable seed qui garde en mémoire si c'est déjà fait) 
+                                                                        et déclare un compteur i pour les boucles */
+    jeu->lignes = lignes;                                               /* Definit le nombre de lignes */
+    jeu->colonnes = colonnes;                                           /* Definit le nombre de colonnes */
+    jeu->plateau = (char **)malloc(sizeof(char *) * lignes * colonnes);  /* creer un tableau pour ligne et collone et chaque 
+                                                                            case contiendra un pointeur vers un fruit */
+    jeu->fruits[0] = "🍏";                                                  
+    jeu->fruits[1] = "🍋";                                                  
+    jeu->fruits[2] = "🍇";                                                 
+    jeu->fruits[3] = "🍊";                                                
+    jeu->fruits[4] = "🥥";                                 
+    for (i = 0; i < NB_FRUITS; i++) jeu->score[i] = 0;      /* Initialise les scores a 0 */
+    if (jeu->niveau == 1) {                                     /* Si niveau 1 */
+        jeu->coups = COUPS_N1;                                  /* 40 coups */
+        jeu->objectif = OBJECTIF_N1;                            /* 25 fruits/type */
+        jeu->temps_limite = TEMPS_N1;                           /* 240 secondes */
+        jeu->objectif_arbres = 0;                               /* Pas d'objectif d'arbres */
+    } else if (jeu->niveau == 2) {                                  /* Si niveau 2 */
+        jeu->coups = COUPS_N2;                                      /* 35 coups */
+        jeu->objectif = OBJECTIF_N2;                                /* 30 fruits/type */
+        jeu->temps_limite = TEMPS_N2;                               /* 210 secondes */
+        jeu->objectif_arbres = 0;                                   /* Pas d'objectif d'arbres */
+    } else {                                                            /* Niveau 3 */
+        jeu->coups = COUPS_N3;                                          /* 30 coups */
+        jeu->objectif = OBJECTIF_N3;                                    /* 35 fruits/type */
+        jeu->temps_limite = TEMPS_N3;                                   /* 180 secondes */
+        jeu->objectif_arbres = OBJECTIF_ARBRES;                         /* 3 arbres requis */
     }
-    jeu->vies = VIES_MAX;                                   /* Init vies au max */
+    jeu->vies = VIES_MAX;                                   /* initialisation des vies a 3 */
     jeu->arbres_utilises = 0;                               /* 0 arbres utilises */
-    jeu->temps_debut = time(NULL);                          /* Timestamp debut */
-    jeu->temps_restant = jeu->temps_limite;                 /* Init temps restant */
-    for (i = 0; i < lignes * colonnes; i++)                 /* Pour chaque case */
-        jeu->plateau[i] = jeu->fruits[rand() % NB_FRUITS];  /* Place fruit aleatoire */
-    if (jeu->niveau == 1) cascade(jeu);                     /* Cascade simple N1 */
-    else cascade_niveau2(jeu);                              /* Cascade avec speciaux N2/N3 */
-    for (i = 0; i < NB_FRUITS; i++) jeu->score[i] = 0;      /* Remet scores a 0 */
-    jeu->curseur_x = jeu->curseur_y = 0;                    /* Curseur en (0,0) */
-    jeu->selection = 0;                                     /* Pas de selection */
+    jeu->temps_debut = time(NULL);                          /* temps du début */
+    jeu->temps_restant = jeu->temps_limite;                     /* temps restant */
+    for (i = 0; i < lignes * colonnes; i++)                     /* Pour chaque case */
+        jeu->plateau[i] = jeu->fruits[rand() % NB_FRUITS];          /* Place fruit aleatoire en utilisant le 
+                                                                    numéro attribué a chaque fruit (aléatoire de 0 à 4)*/
+    if (jeu->niveau == 1) cascade(jeu);                     /* Cascade simple Niveau 1 */
+    else cascade_niveau2(jeu);                              /* Cascade avec speciaux Niveau 2/Niveau 3 */
+    for (i = 0; i < NB_FRUITS; i++) jeu->score[i] = 0;      /* Remet les scores a 0 */
+    jeu->curseur_x = jeu->curseur_y = 0;                    /* Place le curseur en haut à gauche  */
+    jeu->selection = 0;                                     /* aucun fruit séléctionné au départ */
     jeu->select_x = jeu->select_y = -1;                     /* Position invalide */
     jeu->en_cours = 1;                                      /* Partie active */
     jeu->victoire = 0;                                      /* Pas de victoire */
 }
 
-void liberer_partie(Jeu *jeu)                               /* Libere memoire plateau */
+void liberer_partie(Jeu *jeu)                               /* Libere la memoire plateau */
 {
     if (jeu->plateau) {                                     /* Si plateau alloue */
         free(jeu->plateau);                                 /* Libere memoire */
