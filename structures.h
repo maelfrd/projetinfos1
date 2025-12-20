@@ -1,9 +1,8 @@
-/* structures.h - Definitions du jeu */                     /* En-tete du fichier */
-#ifndef STRUCTURES_H                                        /* Protection contre inclusion multiple */
-#define STRUCTURES_H                                        /* Debut de la definition du header */
 
-/* Nombre de fruits normaux */                              /* Commentaire de section */
-#define NB_FRUITS 5                                         /* Constante: 5 types de fruits dans le jeu */
+#ifndef STRUCTURES_H                            
+#define STRUCTURES_H                                        
+
+#define NB_FRUITS 5                                         
 
 /* Bonbons speciaux */                                      /* Commentaire de section */
 #define EMOJI_ARBRE     "🎄"                                /* Emoji sapin: efface une colonne */
@@ -25,10 +24,10 @@
 #define OBJECTIF_N3 35                                      /* Fruits a collecter par type niveau 3 */
 #define OBJECTIF_ARBRES 3                                   /* Nombre d'arbres a utiliser niveau 3 */
 
-/* Fichier de sauvegarde */                                 /* Commentaire de section */
+/* Fichier de sauvegarde */                                 
 #define FICHIER_SAUVEGARDE "sauvegarde.txt"                 /* Nom du fichier pour sauvegarder la partie */
 
-/* Structure principale du jeu */                           /* Commentaire de section */
+/* Structure principale du jeu */ 
 typedef struct {                                            /* Debut de la structure Jeu */
     int lignes;                                             /* Nombre de lignes du plateau */
     int colonnes;                                           /* Nombre de colonnes du plateau */
@@ -55,12 +54,12 @@ typedef struct {                                            /* Debut de la struc
     long temps_debut;                                       /* Timestamp du debut de partie */
     int temps_restant;                                      /* Secondes restantes */
                                                             
-    /* Sauvegarde */                                        /* Commentaire de sous-section */
+    /* Sauvegarde */                                        
     char pseudo[32];                                        /* Pseudo du joueur (max 31 caracteres + '\0') */
     int niveau_max_atteint;                                 /* Plus haut niveau debloque (1, 2 ou 3) */
 } Jeu;                                                      /* Fin de la structure Jeu */
 
-/* Structure pour la sauvegarde */                          /* Commentaire de section */
+/* Structure pour la sauvegarde */                          
 typedef struct {                                            /* Debut de la structure Sauvegarde */
     char pseudo[32];                                        /* Pseudo sauvegarde du joueur */
     int vies;                                               /* Vies restantes sauvegardees */
@@ -68,5 +67,4 @@ typedef struct {                                            /* Debut de la struc
     int existe;                                             /* 1 si fichier sauvegarde existe, 0 sinon */
 } Sauvegarde;                                               /* Fin de la structure Sauvegarde */
 
-#endif                                                      /* Fin de la protection d'inclusion */
-
+#endif                                                      
