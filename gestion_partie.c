@@ -102,28 +102,28 @@ int gerer_echange_n2(Jeu *jeu)                              /* Gere echange nive
     int dx, dy, i1, i2;                                     /* Déclare les variables nécessaires et calcule la distance 
                                                                 entre les deux fruits sélectionnés */
     char *a, *b;                                            /* Pointeurs emojis */
-    dx = abs_val(jeu->curseur_x - jeu->select_x);           /* Distance X */
-    dy = abs_val(jeu->curseur_y - jeu->select_y);           /* Distance Y */
-    if (!((dx == 1 && dy == 0) || (dx == 0 && dy == 1))) {  /* Si pas adjacent */
-        jeu->selection = 0;                                 /* Annule */
-        return -1;                                          /* Echec */
+    dx = abs_val(jeu->curseur_x - jeu->select_x);           /* pareil que Niveau 1*/
+    dy = abs_val(jeu->curseur_y - jeu->select_y);           
+    if (!((dx == 1 && dy == 0) || (dx == 0 && dy == 1))) {  
+        jeu->selection = 0;                                 
+        return -1;                                         
     }
     i1 = jeu->select_x * jeu->colonnes + jeu->select_y;     /* Index case 1 */
     i2 = jeu->curseur_x * jeu->colonnes + jeu->curseur_y;   /* Index case 2 */
     a = jeu->plateau[i1];                                   /* Emoji case 1 */
     b = jeu->plateau[i2];                                   /* Emoji case 2 */
-    if (est_special(a) || est_special(b)) {                 /* Si special implique */
+    if (est_special(a) || est_special(b)) {                 /* si l'un des deux est un caractère spécial */
         echanger(jeu, jeu->select_x, jeu->select_y, jeu->curseur_x, jeu->curseur_y);  /* Echange */
-        jeu->coups--;                                       /* Decremente */
+        jeu->coups--;                                       /* coups -1 */
         a = jeu->plateau[i1];                               /* Nouveau emoji 1 */
         b = jeu->plateau[i2];                               /* Nouveau emoji 2 */
-        if (strcmp(a, EMOJI_ARCENCIEL) == 0) {              /* Si arc-en-ciel en 1 */
+        if (strcmp(a, EMOJI_ARCENCIEL) == 0) {              /* Si arc-en-ciel en a */
             effet_arcenciel(jeu, b);                        /* Effet sur type b */
-            jeu->plateau[i1] = NULL;                        /* Supprime arc-en-ciel */
-        } else if (strcmp(b, EMOJI_ARCENCIEL) == 0) {       /* Si arc-en-ciel en 2 */
-            effet_arcenciel(jeu, a);                        /* Effet sur type a */
-            jeu->plateau[i2] = NULL;                        /* Supprime */
-        } else {                                            /* Autres speciaux */
+            jeu->plateau[i1] = NULL;                        /* détruit tous les fruits du même type que b) */
+        } else if (strcmp(b, EMOJI_ARCENCIEL) == 0) {       /* pareil si arc-en-ciel en b */
+            effet_arcenciel(jeu, a);                        
+            jeu->plateau[i2] = NULL;                        
+        } else {                                            
             if (strcmp(a, EMOJI_BOMBE) == 0) effet_bombe(jeu, jeu->select_x, jeu->select_y);  /* Bombe 1 */
             else if (strcmp(a, EMOJI_BOOMERANG) == 0) effet_ligne(jeu, jeu->select_x);  /* Boomerang 1 */
             else if (strcmp(a, EMOJI_ARBRE) == 0) { effet_colonne(jeu, jeu->select_y); jeu->arbres_utilises++; }  /* Arbre 1 */
@@ -131,8 +131,8 @@ int gerer_echange_n2(Jeu *jeu)                              /* Gere echange nive
             else if (strcmp(b, EMOJI_BOOMERANG) == 0) effet_ligne(jeu, jeu->curseur_x);  /* Boomerang 2 */
             else if (strcmp(b, EMOJI_ARBRE) == 0) { effet_colonne(jeu, jeu->curseur_y); jeu->arbres_utilises++; }  /* Arbre 2 */
         }
-        cascade_niveau2(jeu);                               /* Cascade N2 */
-        jeu->selection = 0;                                 /* Desactive */
+        cascade_niveau2(jeu);                              
+        jeu->selection = 0;                                 /* Desactive la séléction */
         return 0;                                           /* Succes */
     }
     if (!permutation_valide_n2(jeu, jeu->select_x, jeu->select_y, jeu->curseur_x, jeu->curseur_y)) {  /* Si invalide */
@@ -140,52 +140,52 @@ int gerer_echange_n2(Jeu *jeu)                              /* Gere echange nive
         return -1;                                          /* Echec */
     }
     echanger(jeu, jeu->select_x, jeu->select_y, jeu->curseur_x, jeu->curseur_y);  /* Echange */
-    jeu->coups--;                                           /* Decremente */
+    jeu->coups--;                                           /* coups -1 */
     cascade_niveau2(jeu);                                   /* Cascade */
-    jeu->selection = 0;                                     /* Desactive */
+    jeu->selection = 0;                                     /* Desactive la selection */
     return 0;                                               /* Succes */
 }
 
 void boucle_jeu(Jeu *jeu)                                   /* Boucle principale N1 */
 {
-    char cmd;                                               /* Commande clavier */
-    while (jeu->en_cours && jeu->coups > 0 && !verifier_victoire(jeu)) {  /* Tant que actif */
+    char cmd;                                               /* les Commandes au clavier */
+    while (jeu->en_cours && jeu->coups > 0 && !verifier_victoire(jeu)) {  /* continue tant que le jeu est actif */
         if (jeu->temps_limite > 0) {                        /* Si temps limite */
             jeu->temps_restant = jeu->temps_limite - (int)(time(NULL) - jeu->temps_debut);  /* Calcule restant */
-            if (jeu->temps_restant <= 0) break;             /* Si ecoule, sort */
+            if (jeu->temps_restant <= 0) break;             /* si le temps est écoulé on sort du jeu */
         }
         afficher_jeu(jeu);                                  /* Affiche plateau */
-        cmd = lire_commande();                              /* Lit commande */
-        appliquer_commande(jeu, cmd);                       /* Applique */
+        cmd = lire_commande();                              /* Lit la commande */
+        appliquer_commande(jeu, cmd);                       /* Applique cette derniere */
         if ((cmd == 'p' || cmd == 'P') && jeu->selection && (jeu->curseur_x != jeu->select_x || jeu->curseur_y != jeu->select_y))  /* Si P et selection */
-            gerer_echange(jeu);                             /* Tente echange */
+            gerer_echange(jeu);                             /* on essaye de faire un echange */
     }
-    jeu->victoire = verifier_victoire(jeu);                 /* Verifie victoire finale */
+    jeu->victoire = verifier_victoire(jeu);                 /* Verifie la victoire finale */
 }
 
-void boucle_jeu_n2(Jeu *jeu)                                /* Boucle principale N2 */
+void boucle_jeu_n2(Jeu *jeu)                                /* Boucle principale Niveau 2 */
 {
-    char cmd;                                               /* Commande clavier */
-    while (jeu->en_cours && jeu->coups > 0 && !verifier_victoire(jeu)) {  /* Tant que actif */
+    char cmd;                                               /* pareil que pour le niveau 1 */
+    while (jeu->en_cours && jeu->coups > 0 && !verifier_victoire(jeu)) {  
         if (jeu->temps_limite > 0) {                        /* Si temps limite */
-            jeu->temps_restant = jeu->temps_limite - (int)(time(NULL) - jeu->temps_debut);  /* Calcule */
-            if (jeu->temps_restant <= 0) break;             /* Sort si ecoule */
+            jeu->temps_restant = jeu->temps_limite - (int)(time(NULL) - jeu->temps_debut);  
+            if (jeu->temps_restant <= 0) break;             
         }
-        afficher_jeu(jeu);                                  /* Affiche */
-        cmd = lire_commande();                              /* Lit */
-        appliquer_commande(jeu, cmd);                       /* Applique */
-        if ((cmd == 'p' || cmd == 'P') && jeu->selection && (jeu->curseur_x != jeu->select_x || jeu->curseur_y != jeu->select_y))  /* Si echange */
-            gerer_echange_n2(jeu);                          /* Gere N2 */
+        afficher_jeu(jeu);                                
+        cmd = lire_commande();                             
+        appliquer_commande(jeu, cmd);                       
+        if ((cmd == 'p' || cmd == 'P') && jeu->selection && (jeu->curseur_x != jeu->select_x || jeu->curseur_y != jeu->select_y))  
+            gerer_echange_n2(jeu);                          /* effectue l'échange selon les critères des echanges du niveau 2 */
     }
     jeu->victoire = verifier_victoire(jeu);                 /* Verifie */
 }
 
-void boucle_jeu_n3(Jeu *jeu) { boucle_jeu_n2(jeu); }        /* N3 = N2 avec objectifs differents */
+void boucle_jeu_n3(Jeu *jeu) { boucle_jeu_n2(jeu); }        /* Niveau 3 = Niveau 2 avec objectifs differents */
 
 void sauvegarder_partie(Sauvegarde *sauv)                   /* Sauvegarde dans fichier */
 {
     FILE *f = fopen(FICHIER_SAUVEGARDE, "w");               /* Ouvre en ecriture */
-    if (f == NULL) return;                                  /* Si echec, sort */
+    if (f == NULL) return;                                  /* Si echec alors on sort */
     fprintf(f, "%s\n", sauv->pseudo);                       /* Ecrit pseudo */
     fprintf(f, "%d\n", sauv->vies);                         /* Ecrit vies */
     fprintf(f, "%d\n", sauv->niveau_en_cours);              /* Ecrit niveau */
