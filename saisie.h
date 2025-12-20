@@ -1,5 +1,5 @@
 
-/* saisie.h */                                              /* En-tete du fichier */
+/* saisie.h */                                              
 #ifndef SAISIE_H                                            /* Protection contre inclusion multiple */
 #define SAISIE_H                                            /* Debut de la definition du header */
 
