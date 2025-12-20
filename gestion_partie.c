@@ -61,26 +61,27 @@ void init_partie(Jeu *jeu, int lignes, int colonnes)
 
 void liberer_partie(Jeu *jeu)                               /* Libere la memoire plateau */
 {
-    if (jeu->plateau) {                                     /* Si plateau alloue */
-        free(jeu->plateau);                                 /* Libere memoire */
-        jeu->plateau = NULL;                                /* Evite pointeur sauvage */
+    if (jeu->plateau) {                                     
+        free(jeu->plateau);                                 /* Libere la memoire */
+        jeu->plateau = NULL;                              
     }
 }
 
-int verifier_victoire(Jeu *jeu)                             /* Verifie si objectifs atteints */
+int verifier_victoire(Jeu *jeu)                             /* verification des objectifs*/
 {
-    int i;                                                  /* Compteur */
-    for (i = 0; i < NB_FRUITS; i++)                         /* Pour chaque fruit */
-        if (jeu->score[i] < jeu->objectif) return 0;        /* Si pas atteint, pas victoire */
-    if (jeu->objectif_arbres > 0 && jeu->arbres_utilises < jeu->objectif_arbres)  /* Si arbres requis */
-        return 0;                                           /* Et pas atteint */
+    int i;                                                 
+    for (i = 0; i < NB_FRUITS; i++)                         
+        if (jeu->score[i] < jeu->objectif) return 0;        /* vérification pour chaque fruit si les objs sont atteints
+                                                                si l'un d'entre eux n'est pas atteint alors defaite*/
+    if (jeu->objectif_arbres > 0 && jeu->arbres_utilises < jeu->objectif_arbres)  /* pareil pour les arbres au niveau 3 */
+        return 0;                                           /* defaite */
     return 1;                                               /* Victoire */
 }
 
-int gerer_echange(Jeu *jeu)                                 /* Gere echange niveau 1 */
+int gerer_echange(Jeu *jeu)                                 
 {
-    int dx = abs_val(jeu->curseur_x - jeu->select_x);       /* Distance X */
-    int dy = abs_val(jeu->curseur_y - jeu->select_y);       /* Distance Y */
+    int dx = abs_val(jeu->curseur_x - jeu->select_x);       
+    int dy = abs_val(jeu->curseur_y - jeu->select_y);       /* calcule la distance entre X et Y */
     if (!((dx == 1 && dy == 0) || (dx == 0 && dy == 1))) {  /* Si pas adjacent */
         jeu->selection = 0;                                 /* Annule selection */
         return -1;                                          /* Echec */
@@ -90,7 +91,7 @@ int gerer_echange(Jeu *jeu)                                 /* Gere echange nive
         return -1;                                          /* Echec */
     }
     echanger(jeu, jeu->select_x, jeu->select_y, jeu->curseur_x, jeu->curseur_y);  /* Echange cases */
-    jeu->coups--;                                           /* Decremente coups */
+    jeu->coups--;                                           /* nb de coups -1 */
     cascade(jeu);                                           /* Lance cascade */
     jeu->selection = 0;                                     /* Desactive selection */
     return 0;                                               /* Succes */
@@ -98,7 +99,8 @@ int gerer_echange(Jeu *jeu)                                 /* Gere echange nive
 
 int gerer_echange_n2(Jeu *jeu)                              /* Gere echange niveau 2/3 */
 {
-    int dx, dy, i1, i2;                                     /* Variables locales */
+    int dx, dy, i1, i2;                                     /* Déclare les variables nécessaires et calcule la distance 
+                                                                entre les deux fruits sélectionnés */
     char *a, *b;                                            /* Pointeurs emojis */
     dx = abs_val(jeu->curseur_x - jeu->select_x);           /* Distance X */
     dy = abs_val(jeu->curseur_y - jeu->select_y);           /* Distance Y */
