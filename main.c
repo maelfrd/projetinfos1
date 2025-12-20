@@ -2,12 +2,12 @@
 
 /* main.c - Programme principal Candy Crush */
 
-#include <stdio.h>                                          /* Bibliotheque entrees/sorties */
-#include <string.h>                                         /* Bibliotheque chaines */
-#include "structures.h"                                     /* Structures du jeu */
-#include "gestion_partie.h"                                 /* Gestion partie */
-#include "affichage.h"                                      /* Affichage */
-#include "moteur.h"                                         /* Moteur jeu */
+#include <stdio.h>                                          
+#include <string.h>                                         
+#include "structures.h"                                     
+#include "gestion_partie.h"                                 
+#include "affichage.h"                                      
+#include "moteur.h"                                         
 
 static void boucle_principale(Sauvegarde *sauv);            /* Prototype boucle principale */
 static void traiter_choix_avec_sauvegarde(int choix, Sauvegarde *sauv);  /* Prototype avec sauv */
@@ -17,7 +17,7 @@ static void nouvelle_partie(Sauvegarde *sauv, int avec_warning);  /* Prototype n
 static void jouer_niveau(Jeu *jeu, Sauvegarde *sauv);       /* Prototype jouer */
 static void gerer_resultat_niveau(Jeu *jeu, Sauvegarde *sauv);  /* Prototype resultat */
 
-int main(void)                                              /* Point d'entree du programme */
+int main(void)                                              
 {
     Sauvegarde sauv;                                        /* Variable sauvegarde */
     charger_sauvegarde(&sauv);                              /* Charge sauvegarde */
@@ -66,7 +66,7 @@ static void reprendre_partie(Sauvegarde *sauv)              /* Reprend partie sa
 
 static void nouvelle_partie(Sauvegarde *sauv, int avec_warning)  /* Nouvelle partie */
 {
-    Jeu jeu;                                                /* Structure jeu */
+    Jeu jeu;                                                
     if (avec_warning) afficher_nouvelle_partie_warning(sauv->pseudo);  /* Warning si demande */
     else afficher_nouvelle_partie();                        /* Sinon ecran normal */
     lire_pseudo(sauv->pseudo);                              /* Lit pseudo */
