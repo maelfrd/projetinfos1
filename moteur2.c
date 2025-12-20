@@ -5,7 +5,7 @@
 #include "moteur.h"                                         
 #include "affichage.h"                                     
 #include "saisie.h"                                         
-#define DELAI_ANIMATION 500000  // met un délai de 0,5 secondes entre chaques animation
+#define DELAI_ANIMATION 500000  // met un délai de 0,5 secondes entre chaques animation pour permettre a l'utilisateur de suivre l'avancé 
 
  
  // Affiche le menu et retourne l’option choisie
