@@ -1,4 +1,4 @@
-/* affichage.h */                                           /* En-tete du fichier */
+
 #ifndef AFFICHAGE_H                                         /* Protection contre inclusion multiple */
 #define AFFICHAGE_H                                         /* Debut de la definition du header */
 
